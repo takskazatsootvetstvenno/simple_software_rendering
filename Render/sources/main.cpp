@@ -1,10 +1,17 @@
 #include <iostream>
-//#include "SDL.h"
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
+#include "Window.hpp"
 
-int main()
+int main(int argc, char **args)
 {
+    try {
+        Window myWindow(800, 600);
+        myWindow.update();
+        system("pause");
+    } catch (const std::exception& e) { 
+        std::cerr << e.what() << std::endl;
+    }
 
- std::cout << "test build";
- system("pause");
  return 0;
 }
