@@ -16,6 +16,10 @@ set(MODULE_INSTALL_DIR "${CMAKE_BINARY_DIR}/thirdparty/install")
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+if(MSVC)
+	 add_compile_options(/MP)
+endif()
+
 ExternalProject_Add(SDL
 	SOURCE_DIR ${MODULE_SOURCE_DIR}/SDL
 	BINARY_DIR ${MODULE_BUILD_DIR}/SDL
@@ -37,7 +41,7 @@ ExternalProject_Add(SDL
 		"-DSDL_FORCE_STATIC_VCRT=ON"
 		"-DSDL_HAPTIC=OFF"
 		"-DSDL_HIDAPI=ON"
-		"-DSDL_JOYSTICK=ON"
+		"-DSDL_JOYSTICK=OFF"
 		"-DSDL_LIBC=ON"
 		"-DSDL_LOADSO=ON"
 		"-DSDL_LOCALE=OFF"
@@ -56,10 +60,6 @@ ExternalProject_Add(SDL
 		"-DSDL_VULKAN=OFF"
 		"-DSDL_WASAPI=OFF"
 	BUILD_ALWAYS 1)
-
-if(MSVC)
-	 add_compile_options(/MP)
-endif()
 
 add_subdirectory(Render)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Render)
