@@ -20,8 +20,34 @@ Window::Window(unsigned int width, unsigned int height)
         auto error = std::string("Can't get window surface! Error: ") + SDL_GetError();
         throw std::runtime_error(error);
     }
-    SDL_FillRect(m_surface, NULL, SDL_MapRGB(m_surface->format, 0, 255, 0)); 
+    std::cout << "Current window pixel format is: " << SDL_GetPixelFormatName(m_surface->format->format) << std::endl;
+    if (m_surface->format->BitsPerPixel != 32) {
+        std::cerr << "Warning! Not a 32-bit per pixel surface!" << std::endl;
+    }
 }
+
+void Window::setPixel(const uint32_t x, const uint32_t y, const Color color) noexcept {
+    uint32_t* buffer = static_cast<uint32_t*>(m_surface->pixels); 
+    auto width = m_surface->w;
+    buffer[x + y * width] = SDL_MapRGBA(m_surface->format, color.r, color.g, color.b, color.a);
+}
+
+Color Window::getPixelColor(const uint32_t x, const uint32_t y) noexcept {
+    const uint32_t* buffer = static_cast<uint32_t*>(m_surface->pixels);
+    auto width = m_surface->w;
+    Color pixelColor;
+    SDL_GetRGBA(buffer[x + y * width], m_surface->format, &pixelColor.r, &pixelColor.g, &pixelColor.b, &pixelColor.a);
+    return pixelColor;
+}
+
+void Window::clearWindow(const Color color) {
+    auto result = SDL_FillRect(m_surface, nullptr, SDL_MapRGBA(m_surface->format, color.r, color.g, color.b, color.a));
+    if (result != 0) {
+        auto error = std::string("Error during clearing surface!") + SDL_GetError();
+        throw std::runtime_error(error);
+    }
+}
+
 void Window::update() const {
     auto result = SDL_UpdateWindowSurface(m_window);
     if (result != 0) { 
@@ -29,6 +55,15 @@ void Window::update() const {
         throw std::runtime_error(error);
     }
 }
+
+bool Window::windowShouldClose() noexcept {
+    SDL_Event window_event;
+    if (SDL_PollEvent(&window_event) == 1) {
+        if (window_event.type == SDL_QUIT) m_shouldClose = true;
+    }
+    return m_shouldClose;
+}
+
 Window::~Window() {
     SDL_DestroyWindow(m_window);
     SDL_Quit();

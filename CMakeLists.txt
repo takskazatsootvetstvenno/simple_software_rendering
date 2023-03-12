@@ -8,6 +8,8 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Set build output directories.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -22,9 +24,16 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/lib)
 
 add_subdirectory(Render)
 
+# Set SDL options
 set(SDL_STATIC OFF CACHE BOOL "")
 set(SDL_SHARED ON CACHE BOOL "")
 set(SDL_TEST OFF CACHE BOOL "")
 set(SDL_AUDIO OFF CACHE BOOL "")
 add_subdirectory(thirdparty)
+
+set_target_properties(SDL2 PROPERTIES FOLDER "SDL_project")
+set_target_properties(sdl_headers_copy PROPERTIES FOLDER "SDL_project")
+set_target_properties(SDL2main PROPERTIES FOLDER "SDL_project")
+set_target_properties(uninstall PROPERTIES FOLDER "SDL_project")
+
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT SoftwareRender)
