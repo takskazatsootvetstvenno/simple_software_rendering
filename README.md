@@ -15,4 +15,4 @@ This is a simple software rendering project
     ./create_project_linux.sh Release
     or
     ./create_project_linux.sh Debug
-##### on Windows you can choose build type via Visual Studio (.sln file will be in "build" directory)
+##### On Windows you can choose build type via Visual Studio (.sln file will be in "build" directory)
