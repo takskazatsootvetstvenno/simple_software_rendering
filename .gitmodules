@@ -2,3 +2,7 @@
 	path = thirdparty/SDL
 	url = https://github.com/libsdl-org/SDL.git
 	branch = release-2.26.4
+[submodule "thirdparty/GLM"]
+	path = thirdparty/GLM
+	url = https://github.com/g-truc/glm.git
+	branch = 0.9.9.8
