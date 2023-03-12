@@ -5,4 +5,4 @@ if exist build\ (
 mkdir build
 cd build
 cmake ..
-cmake --build . -j 8 --target SDL Render
+cmake --build . -j 8

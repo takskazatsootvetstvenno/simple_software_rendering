@@ -1,5 +1,5 @@
 #include <iostream>
-#include "SDL2/SDL.h"
+#include "SDL.h"
 #include "Window.hpp"
 
 Window::Window(unsigned int width, unsigned int height)
