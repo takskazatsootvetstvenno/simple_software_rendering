@@ -19,3 +19,4 @@ This is a simple software rendering project
 
 ##### Used Libraries:
 * SDL2 - https://www.libsdl.org/
+* GLM  - https://github.com/g-truc/glm 

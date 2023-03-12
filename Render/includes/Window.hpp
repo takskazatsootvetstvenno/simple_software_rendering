@@ -1,20 +1,14 @@
 #include <cstdint>
+#include <glm/glm.hpp>
 class SDL_Window;
 class SDL_Surface;
-
-struct Color {
-    uint8_t r = 0;
-    uint8_t g = 0;
-    uint8_t b = 0; 
-    uint8_t a = 0;
-};
 
 class Window {
  public:
     Window(unsigned int width, unsigned int height);
-    void setPixel(const uint32_t x, const uint32_t y, const Color color) noexcept;
-    Color getPixelColor(const uint32_t x, const uint32_t y) noexcept;
-    void clearWindow(const Color color);
+    void setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 color) noexcept;
+    glm::u8vec4 getPixelColor(const uint32_t x, const uint32_t y) noexcept;
+    void clearWindow(glm::u8vec4 color);
     void update() const;
     bool windowShouldClose() noexcept;
     ~Window();

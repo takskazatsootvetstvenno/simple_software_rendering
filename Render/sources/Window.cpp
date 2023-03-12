@@ -26,21 +26,21 @@ Window::Window(unsigned int width, unsigned int height)
     }
 }
 
-void Window::setPixel(const uint32_t x, const uint32_t y, const Color color) noexcept {
+void Window::setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 color) noexcept {
     uint32_t* buffer = static_cast<uint32_t*>(m_surface->pixels); 
     auto width = m_surface->w;
     buffer[x + y * width] = SDL_MapRGBA(m_surface->format, color.r, color.g, color.b, color.a);
 }
 
-Color Window::getPixelColor(const uint32_t x, const uint32_t y) noexcept {
+glm::u8vec4 Window::getPixelColor(const uint32_t x, const uint32_t y) noexcept {
     const uint32_t* buffer = static_cast<uint32_t*>(m_surface->pixels);
     auto width = m_surface->w;
-    Color pixelColor;
+    glm::u8vec4 pixelColor;
     SDL_GetRGBA(buffer[x + y * width], m_surface->format, &pixelColor.r, &pixelColor.g, &pixelColor.b, &pixelColor.a);
     return pixelColor;
 }
 
-void Window::clearWindow(const Color color) {
+void Window::clearWindow(const glm::u8vec4 color) {
     auto result = SDL_FillRect(m_surface, nullptr, SDL_MapRGBA(m_surface->format, color.r, color.g, color.b, color.a));
     if (result != 0) {
         auto error = std::string("Error during clearing surface!") + SDL_GetError();

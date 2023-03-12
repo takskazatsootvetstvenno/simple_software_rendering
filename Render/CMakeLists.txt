@@ -23,3 +23,4 @@ target_include_directories(${RENDER_PROJECT_NAME} PUBLIC includes)
 target_include_directories(${RENDER_PROJECT_NAME} PRIVATE src)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
