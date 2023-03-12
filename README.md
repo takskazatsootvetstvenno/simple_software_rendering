@@ -16,3 +16,6 @@ This is a simple software rendering project
     or
     ./create_project_linux.sh Debug
 ##### On Windows you can choose build type via Visual Studio (.sln file will be in "build" directory)
+
+##### Used Libraries:
+* SDL2 - https://www.libsdl.org/
