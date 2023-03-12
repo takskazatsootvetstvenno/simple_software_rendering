@@ -1,4 +1,4 @@
-//
+#include <cstdint>
 class SDL_Window;
 class SDL_Surface;
 

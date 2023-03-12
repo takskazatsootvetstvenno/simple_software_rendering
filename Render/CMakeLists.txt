@@ -4,11 +4,13 @@ set(RENDER_PROJECT_NAME SoftwareRender)
 project(${RENDER_PROJECT_NAME})
 
 set(RENDER_INCLUDES
-	includes/Window.hpp 
+	includes/Window.hpp
+	includes/Application.hpp 
 )
 set(RENDER_SOURCES
 	sources/main.cpp
 	sources/Window.cpp
+	sources/Application.cpp
 )
 
 if(MSVC)
