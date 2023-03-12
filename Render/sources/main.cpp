@@ -11,7 +11,7 @@ int main(int argc, char **args)
 #endif
         Window myWindow(800, 600);
         myWindow.update();
-        system("pause");
+        auto _ = getchar();
     } catch (const std::exception& e) { 
         std::cerr << e.what() << std::endl;
     }

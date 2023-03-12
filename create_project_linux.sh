@@ -7,5 +7,13 @@ then
 fi
 mkdir build
 cd build
-cmake ..
-cmake --build . --target SDL Render -j 8 --config Debug
+
+if [ -n "$1" ]
+then
+echo "CMAKE_BUILD_TYPE will be set to" $1
+cmake .. -DCMAKE_BUILD_TYPE="$1"
+else
+echo "CMAKE_BUILD_TYPE will be set to Debug"
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+fi
+cmake --build . -j 8

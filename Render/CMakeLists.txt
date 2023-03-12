@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-set(RENDER_PROJECT_NAME Render)
+set(RENDER_PROJECT_NAME SoftwareRender)
 project(${RENDER_PROJECT_NAME})
 
 set(RENDER_INCLUDES
