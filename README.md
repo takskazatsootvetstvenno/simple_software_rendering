@@ -3,7 +3,7 @@ This is a simple software rendering project
 
 ### build requirements:
 * cmake 3.21 or newer
-* compiler with C++17 support (MSVC for windows, Clang/GCC for linux)
+* compiler with C++20 support (MSVC for windows, Clang/GCC for linux)
 
 ### Building:
     git clone --recursive https://github.com/takskazatsootvetstvenno/simple_software_rendering
