@@ -2,7 +2,7 @@
 #include "SDL.h"
 #include "Window.hpp"
 
-Window::Window(unsigned int width, unsigned int height)
+Window::Window(uint32_t width, uint32_t height)
 	:m_width(width), m_height(height)
 {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -27,6 +27,7 @@ Window::Window(unsigned int width, unsigned int height)
 }
 
 void Window::setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 color) noexcept {
+    assert(x < m_width && y < m_height && "setPixel: {x, y} outside the screen!");
     uint32_t* buffer = static_cast<uint32_t*>(m_surface->pixels); 
     auto width = m_surface->w;
     buffer[x + y * width] = SDL_MapRGBA(m_surface->format, color.r, color.g, color.b, color.a);
@@ -48,6 +49,8 @@ void Window::clearWindow(const glm::u8vec4 color) {
     }
 }
 
+std::array<uint32_t, 2> Window::getExtent() const noexcept { return {m_width, m_height}; }
+
 void Window::update() const {
     auto result = SDL_UpdateWindowSurface(m_window);
     if (result != 0) { 
@@ -65,6 +68,7 @@ bool Window::windowShouldClose() noexcept {
 }
 
 Window::~Window() {
-    SDL_DestroyWindow(m_window);
+    if (m_window != nullptr)
+        SDL_DestroyWindow(m_window);
     SDL_Quit();
 }
