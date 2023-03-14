@@ -54,7 +54,7 @@ int main(int argc, char** args) {
         SR::Application app(1280, 720);
         loadMeshesFromOBJ("../Models/boxTest.obj", app);
         app.start();
-    } catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
+    } catch (const std::exception& e) { std::cerr << "Critic Error: " << e.what() << std::endl; }
 
     return 0;
 }
