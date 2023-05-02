@@ -31,9 +31,11 @@ void loadMeshesFromOBJ(const std::string& path, SR::Application& app) {
                                       {vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z}});
             }
             current_mesh.setVertexData(std::move(vertexData));
-            std::vector<uint32_t> indices;
-            for (auto ind : mesh.Indices) { indices.emplace_back(ind); }
-            current_mesh.setIndexData(std::move(indices));
+            using render_mesh_index_type = std::remove_reference_t<decltype(current_mesh.getIndicesData())>::value_type;
+            static_assert(std::is_same_v<render_mesh_index_type, decltype(mesh.Indices)::value_type>,
+                          "Object loader index type and render index type are different!");
+            current_mesh.setIndexData(std::move(mesh.Indices));
+            current_mesh.setModelMatrix(glm::scale(glm::mat4{1.f}, glm::vec3(10.f)));  //Set properly for model! TO DO and auto resize
             meshes.emplace_back(std::move(current_mesh));
         }
         app.setMeshes(std::move(meshes));
@@ -52,7 +54,8 @@ int main(int argc, char** args) {
 #endif
         setGlobalLocale();
         SR::Application app(1280, 720);
-        loadMeshesFromOBJ("../Models/boxTest.obj", app);
+        //loadMeshesFromOBJ("../Models/boxTest/boxTest.obj", app);
+        loadMeshesFromOBJ("../Models/pyramid/pyramid.obj", app);
         app.start();
     } catch (const std::exception& e) { std::cerr << "Critic Error: " << e.what() << std::endl; }
 

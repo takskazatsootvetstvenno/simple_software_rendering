@@ -51,7 +51,7 @@ void Window::clearWindow(const glm::u8vec4 color) {
 
 std::array<uint32_t, 2> Window::getExtent() const noexcept { return {m_width, m_height}; }
 
-void Window::update() const {
+void Window::updateScreen() const {
     auto result = SDL_UpdateWindowSurface(m_window);
     if (result != 0) { 
         auto error = std::string("Error during update window surface!") + SDL_GetError();
@@ -59,11 +59,35 @@ void Window::update() const {
     }
 }
 
-bool Window::windowShouldClose() noexcept {
+Window::WindowEvent Window::updateEvents() {
     SDL_Event window_event;
+    WindowEvent current_event = WindowEvent::DEFAULT;
     if (SDL_PollEvent(&window_event) == 1) {
-        if (window_event.type == SDL_QUIT) m_shouldClose = true;
+        switch (window_event.type) {
+            case SDL_QUIT:
+                m_shouldClose = true;
+                break;
+            case SDL_KEYDOWN:
+                switch (window_event.key.keysym.scancode) {
+                    case SDL_SCANCODE_W: 
+                        current_event = WindowEvent::KEY_PRESSED_W;
+                        break;
+                    case SDL_SCANCODE_S: 
+                         current_event = WindowEvent::KEY_PRESSED_S;
+                        break;
+                    case SDL_SCANCODE_A: current_event = WindowEvent::KEY_PRESSED_A; break;
+                    case SDL_SCANCODE_D: current_event = WindowEvent::KEY_PRESSED_D; break;
+                    case SDL_SCANCODE_Q: current_event = WindowEvent::KEY_PRESSED_Q; break;
+                    case SDL_SCANCODE_E: current_event = WindowEvent::KEY_PRESSED_E; break;
+                    case SDL_SCANCODE_SPACE: current_event = WindowEvent::KEY_PRESSED_SPACE; break;
+                    case SDL_SCANCODE_ESCAPE: m_shouldClose = true; break;
+                }
+                break;
+        }
     }
+    return current_event;
+}
+bool Window::windowShouldClose() noexcept {
     return m_shouldClose;
 }
 

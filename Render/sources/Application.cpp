@@ -1,15 +1,36 @@
 #include "Application.hpp"
-#include "glm/glm.hpp"
+#include <iostream>
 #include <cstdlib>
-#include <thread>
-using namespace std::chrono_literals;
 
 namespace SR {
-Application::Application(uint32_t width, uint32_t height) : m_window(width, height) {}
+Application::Application(uint32_t width, uint32_t height) : m_window(width, height), m_camera(width, height) {}
 
 void Application::setMeshes(std::vector<Mesh>&& meshes) noexcept { m_meshes = std::move(meshes); }
 
-void Application::start() { drawLoop(); }
+void Application::processEvent(const Window::WindowEvent e) {
+    const float step = 0.025f;
+    switch (e) {
+        case Window::WindowEvent::KEY_PRESSED_A: 
+            m_camera.changeCameraPosition(glm::vec3(1.f * step, 0.f, 0.f)); break;
+        case Window::WindowEvent::KEY_PRESSED_D: 
+            m_camera.changeCameraPosition(glm::vec3(-1.f * step, 0.f, 0.f)); break;
+        case Window::WindowEvent::KEY_PRESSED_W: 
+            m_camera.changeCircleHeight(1.f); break;
+        case Window::WindowEvent::KEY_PRESSED_S: 
+            m_camera.changeCircleHeight(-1.f); break;
+        case Window::WindowEvent::KEY_PRESSED_Q: m_camera.changeCirclePos(-5.f * 3.141592f / 180.f); break;
+        case Window::WindowEvent::KEY_PRESSED_E: m_camera.changeCirclePos(5.f * 3.141592f / 180.f); break;
+        case Window::WindowEvent::KEY_PRESSED_SPACE: m_camera.loadDefaultCircleCamera(); break;
+    }
+}
+
+void Application::start() {
+    auto [width, height] = m_window.getExtent();
+    m_camera.setViewCircleCamera(15.f, 5.f);
+    m_camera.setPerspectiveProjection(glm::radians(m_camera.getZoom()), static_cast<float>(width) / height,
+                                      0.1f, 256.f);
+    drawLoop(); 
+}
 
 void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y2, Color color = Color{255}) {
     u32 max_x = std::max(x1, x2);
@@ -41,16 +62,105 @@ void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, Color color) {
     drawLine(p3.x, p3.y, p1.x, p1.y, color);
 }
 
-void Application::drawLoop() {
-    m_window.clearWindow(Color(5, 5, 5, 255));
-    while (!m_window.windowShouldClose()) {
-        m_window.setPixel(100, 100, {255, 255, 0, 0});
-        m_window.setPixel(200, 100, {255, 0, 0, 0});
-        m_window.setPixel(300, 100, {0, 0, 255, 0});
-        Color Red{255, 0, 0, 255};
-        drawTriangle({10, 10}, {1200, 400}, {250, 320}, Red);
+void Application::drawMeshes() { 
+    glm::mat4 view = m_camera.getView(); 
+    glm::mat4 projection = m_camera.getProjection();
+    glm::mat4 screen = m_camera.getNDCtoScreenMatrix();
+    Color redColor{255, 0, 0, 255};
+    size_t unclipped_vertices = 0;
+    for (auto& mesh : m_meshes) { 
+        std::vector<std::pair<glm::vec4, bool>> transformed_vertices;
+        transformed_vertices.reserve(mesh.getIndicesData().size());
 
-        m_window.update();
+        auto& inputVertexMas = mesh.getVertexData();
+        auto model = mesh.getModelMatrix();
+        glm::mat4 MVP = projection * view * model;
+        for (auto vertex_index : mesh.getIndicesData())
+        {  
+            auto& resultPos = inputVertexMas[vertex_index].position;
+            auto pos = MVP * glm::vec4(resultPos, 1.f);
+            bool isClipped = false;
+            if ((pos.x > pos.w || pos.x < -pos.w) ||
+                (pos.y > pos.w || pos.y < -pos.w) ||
+                (pos.z > pos.w || pos.z < -pos.w))
+            {
+                isClipped = true;
+            }
+            if (isClipped == false)
+            {
+               ++unclipped_vertices;
+            }
+            transformed_vertices.emplace_back(pos, isClipped);
+        }
+
+        //transformed_vertices contains a ndc vertices
+        for (auto& vertex : transformed_vertices)
+        {
+            if (vertex.second) continue;
+            auto& v = vertex.first;
+            float const w_reciprocal{1.0f / v.w};
+            v.x *= w_reciprocal;
+            v.y *= w_reciprocal;
+            v.z *= w_reciprocal;
+            v.w = 1;
+
+            v = screen * v;
+        }
+        // transformed_vertices contains 2d vertices after perpective division
+
+        for (size_t i = 0; i < transformed_vertices.size(); i += 3) {
+            bool v1_clipped = transformed_vertices[i].second;
+            bool v2_clipped = transformed_vertices[i + 1].second;
+            bool v3_clipped = transformed_vertices[i + 2].second;
+
+            auto v1 = transformed_vertices[i].first;
+            auto v2 = transformed_vertices[i + 1].first;
+            auto v3 = transformed_vertices[i + 2].first;
+            if (v1.x < 0 || v2.x < 0 || v3.x < 0 || v1.y < 0 || v2.y < 0 || v3.y < 0) continue;
+            if (!v1_clipped && !v2_clipped) {
+                drawLine(
+                    static_cast<u32>(v1.x), static_cast<u32>(v1.y),
+                    static_cast<u32>(v2.x), static_cast<u32>(v2.y),
+                    redColor);
+            }
+            if (!v2_clipped && !v3_clipped) {
+                drawLine(
+                    static_cast<u32>(v2.x), static_cast<u32>(v2.y),
+                    static_cast<u32>(v3.x), static_cast<u32>(v3.y),
+                    redColor);
+            }
+            if (!v3_clipped && !v1_clipped) {
+                drawLine(
+                    static_cast<u32>(v3.x), static_cast<u32>(v3.y),
+                    static_cast<u32>(v1.x), static_cast<u32>(v1.y),
+                    redColor);
+            }
+        }
+    }
+    size_t all_vertices = 0;
+    for (auto mesh : m_meshes) { all_vertices += mesh.getVertexData().size(); }
+    std::cout << "Drawed " << unclipped_vertices << "(" << all_vertices << ")" << std::endl;
+}
+
+void Application::drawLoop() {
+    Color background = Color(5, 5, 5, 255);
+    m_window.clearWindow(background);
+    drawMeshes();
+    m_window.updateScreen();
+    
+    while (!m_window.windowShouldClose()) {
+        Window::WindowEvent e = m_window.updateEvents();
+        processEvent(e);
+        if (e != Window::WindowEvent::DEFAULT) {
+            m_window.clearWindow(background);
+            drawMeshes();
+            m_window.updateScreen();
+            std::cout << "Camera: {"
+                << m_camera.getCameraPos().x << "," 
+                << m_camera.getCameraPos().y << ","
+                << m_camera.getCameraPos().z << "}" << std::endl;
+            std::cout << std::endl;
+        }
     }
 }
 }  // namespace SR
