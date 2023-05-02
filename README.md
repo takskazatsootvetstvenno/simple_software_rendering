@@ -1,6 +1,8 @@
 # Simple software rendering
 This is a simple software rendering project
 
+![image](https://user-images.githubusercontent.com/47656611/235807810-fca92fce-a76e-4e3e-9659-fbdbf6207088.png)
+
 ### build requirements:
 * cmake 3.21 or newer
 * compiler with C++20 support (MSVC for windows, Clang/GCC for linux)
@@ -16,6 +18,10 @@ This is a simple software rendering project
     or
     ./create_project_linux.sh Debug
 ##### On Windows you can choose build type via Visual Studio (.sln file will be in "build" directory)
+
+##### Keyboard controls:
+* Q and E - model rotation
+* W and S - change camera height
 
 ##### Used Libraries:
 * SDL2 - https://www.libsdl.org/
