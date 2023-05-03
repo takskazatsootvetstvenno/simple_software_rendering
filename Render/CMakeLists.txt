@@ -30,8 +30,16 @@ target_include_directories(${RENDER_PROJECT_NAME} PRIVATE src)
 
 IF(NOT FORCE_BUFFER_WINDOW)
     target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+    target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
+else()
+    if(MSVC)
+	target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
+    else()
+	target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm -static)
+    endif()
 endif()
-target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
+
+
 
 cmake_path(GET PROJECT_SOURCE_DIR PARENT_PATH ROOT_DIR)
 cmake_path(GET PROJECT_BINARY_DIR PARENT_PATH ROOT_BINARY_DIR)
