@@ -19,7 +19,7 @@ class Application {
     void drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, Color color);
     void drawMeshes();
     void drawLoop();
-
+    void updateCameraPosition();
  private:
     Window m_window;
     Camera m_camera;

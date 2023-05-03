@@ -1,3 +1,4 @@
+#ifndef FORCE_BUFFER_WINDOW
 #include <iostream>
 #include "SDL.h"
 #include "Window.hpp"
@@ -21,6 +22,7 @@ Window::Window(uint32_t width, uint32_t height)
         throw std::runtime_error(error);
     }
     std::cout << "Current window pixel format is: " << SDL_GetPixelFormatName(m_surface->format->format) << std::endl;
+    std::cout << "Current resolution is: (" << width << " x " << height << ")" << std::endl;
     if (m_surface->format->BitsPerPixel != 32) {
         std::cerr << "Warning! Not a 32-bit per pixel surface!" << std::endl;
     }
@@ -61,7 +63,7 @@ void Window::updateScreen() const {
 
 Window::WindowEvent Window::updateEvents() {
     SDL_Event window_event;
-    WindowEvent current_event = WindowEvent::DEFAULT;
+    WindowEvent current_event = WindowEvent::NO_KEYS;
     if (SDL_PollEvent(&window_event) == 1) {
         switch (window_event.type) {
             case SDL_QUIT:
@@ -96,3 +98,4 @@ Window::~Window() {
         SDL_DestroyWindow(m_window);
     SDL_Quit();
 }
+#endif

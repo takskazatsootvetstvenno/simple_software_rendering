@@ -10,6 +10,9 @@ endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+if(FORCE_BUFFER_WINDOW)
+	add_compile_definitions(FORCE_BUFFER_WINDOW)
+endif()
 # Set build output directories.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -29,11 +32,14 @@ set(SDL_STATIC OFF CACHE BOOL "")
 set(SDL_SHARED ON CACHE BOOL "")
 set(SDL_TEST OFF CACHE BOOL "")
 set(SDL_AUDIO OFF CACHE BOOL "")
+
 add_subdirectory(thirdparty)
 
-set_target_properties(SDL2 PROPERTIES FOLDER "SDL_project")
-set_target_properties(sdl_headers_copy PROPERTIES FOLDER "SDL_project")
-set_target_properties(SDL2main PROPERTIES FOLDER "SDL_project")
-set_target_properties(uninstall PROPERTIES FOLDER "SDL_project")
+if(NOT FORCE_BUFFER_WINDOW)
+    set_target_properties(SDL2 PROPERTIES FOLDER "SDL_project")
+    set_target_properties(sdl_headers_copy PROPERTIES FOLDER "SDL_project")
+    set_target_properties(SDL2main PROPERTIES FOLDER "SDL_project")
+    set_target_properties(uninstall PROPERTIES FOLDER "SDL_project")
+endif()
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT SoftwareRender)

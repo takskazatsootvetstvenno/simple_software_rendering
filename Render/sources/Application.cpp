@@ -1,9 +1,11 @@
 #include "Application.hpp"
 #include <iostream>
 #include <cstdlib>
+#include <chrono>
 
 namespace SR {
-Application::Application(uint32_t width, uint32_t height) : m_window(width, height), m_camera(width, height) {}
+Application::Application(uint32_t width, uint32_t height)
+    : m_window(width, height), m_camera(m_window.getExtent()[0], m_window.getExtent()[1]) {}
 
 void Application::setMeshes(std::vector<Mesh>&& meshes) noexcept { m_meshes = std::move(meshes); }
 
@@ -137,9 +139,20 @@ void Application::drawMeshes() {
             }
         }
     }
+#ifndef NDEBUG
     size_t all_vertices = 0;
     for (auto mesh : m_meshes) { all_vertices += mesh.getVertexData().size(); }
     std::cout << "Drawed " << unclipped_vertices << "(" << all_vertices << ")" << std::endl;
+#endif  // DEBUG
+}
+
+void Application::updateCameraPosition() {
+    auto now = std::chrono::system_clock::now();
+    static auto last_time = now;
+    std::time_t end_time = std::chrono::system_clock::to_time_t(now);
+    auto diff = now - last_time;
+    m_camera.changeCirclePos(0.005f * diff.count()/1000.f * 3.141592f / 180.f);   
+    last_time = now;
 }
 
 void Application::drawLoop() {
@@ -155,11 +168,14 @@ void Application::drawLoop() {
             m_window.clearWindow(background);
             drawMeshes();
             m_window.updateScreen();
-            std::cout << "Camera: {"
-                << m_camera.getCameraPos().x << "," 
-                << m_camera.getCameraPos().y << ","
-                << m_camera.getCameraPos().z << "}" << std::endl;
+#ifndef FORCE_BUFFER_WINDOW
+            updateCameraPosition();
+#endif  // FORCE_BUFFER_WINDOW
+#ifndef NDEBUG
+            std::cout << "Camera: {" << m_camera.getCameraPos().x << "," << m_camera.getCameraPos().y << ","
+                                  << m_camera.getCameraPos().z << "}" << std::endl;
             std::cout << std::endl;
+#endif
         }
     }
 }

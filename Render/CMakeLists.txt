@@ -12,7 +12,8 @@ set(RENDER_INCLUDES
 )
 set(RENDER_SOURCES
 	sources/main.cpp
-	sources/Window.cpp
+	sources/SDLWindow.cpp
+	sources/BufferWindow.cpp
 	sources/Application.cpp
 	sources/Camera.cpp
 	sources/Mesh.cpp
@@ -27,9 +28,10 @@ target_compile_features(${RENDER_PROJECT_NAME} PUBLIC cxx_std_20)
 target_include_directories(${RENDER_PROJECT_NAME} PUBLIC includes)
 target_include_directories(${RENDER_PROJECT_NAME} PRIVATE src)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+IF(NOT FORCE_BUFFER_WINDOW)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
-
 
 cmake_path(GET PROJECT_SOURCE_DIR PARENT_PATH ROOT_DIR)
 cmake_path(GET PROJECT_BINARY_DIR PARENT_PATH ROOT_BINARY_DIR)

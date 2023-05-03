@@ -1,12 +1,16 @@
 #include <cstdint>
 #include <array>
+#include <vector>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_LEFT_HANDED
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
+
+#ifndef FORCE_BUFFER_WINDOW
 class SDL_Window;
 class SDL_Surface;
+#endif
 
 class Window {
  public:
@@ -18,7 +22,8 @@ class Window {
         KEY_PRESSED_S,
         KEY_PRESSED_Q,
         KEY_PRESSED_E,
-        KEY_PRESSED_SPACE
+        KEY_PRESSED_SPACE,
+        NO_KEYS
     };
     Window(uint32_t width, uint32_t height);
     void setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 color) noexcept;
@@ -33,7 +38,12 @@ class Window {
  private:
     uint32_t m_width;
     uint32_t m_height;
+#ifndef FORCE_BUFFER_WINDOW
     SDL_Window* m_window = nullptr;
     SDL_Surface* m_surface = nullptr;
+#else
+    std::vector<uint32_t> m_buffer;
+#endif
+
     bool m_shouldClose = false;
 };
