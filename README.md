@@ -17,6 +17,10 @@ This is a simple software rendering project
     ./create_project_linux.sh Release
     or
     ./create_project_linux.sh Debug
+    
+###### Also you can choose to render into the buffer (OFF-Screen rendering):
+    ./create_project_linux.sh Debug FORCE_BUFFER_WINDOW
+    
 ##### On Windows you can choose build type via Visual Studio (.sln file will be in "build" directory)
 
 ##### Keyboard controls:
