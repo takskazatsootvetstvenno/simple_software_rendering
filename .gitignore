@@ -33,4 +33,4 @@
 
 # Folders
 build
-!Models/*.*
+!Models/*/*.*
