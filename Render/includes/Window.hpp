@@ -11,6 +11,7 @@
 class SDL_Window;
 class SDL_Surface;
 #endif
+namespace SR {
 
 class Window {
  public:
@@ -33,6 +34,7 @@ class Window {
     void updateScreen() const;
     WindowEvent updateEvents();
     bool windowShouldClose() noexcept;
+    void exportToBMP() const noexcept;
     ~Window();
 
  private:
@@ -47,3 +49,5 @@ class Window {
 
     bool m_shouldClose = false;
 };
+
+}  // namespace SR

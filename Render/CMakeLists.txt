@@ -17,6 +17,7 @@ set(RENDER_SOURCES
 	sources/Application.cpp
 	sources/Camera.cpp
 	sources/Mesh.cpp
+	sources/exportToBMP.cpp
 )
 
 if(MSVC)

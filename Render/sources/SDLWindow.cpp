@@ -3,6 +3,8 @@
 #include "SDL.h"
 #include "Window.hpp"
 
+extern void exportToBMP(const uint32_t* imageBuffer, const uint32_t width, const uint32_t height) noexcept;
+namespace SR {
 Window::Window(uint32_t width, uint32_t height)
 	:m_width(width), m_height(height)
 {
@@ -61,6 +63,11 @@ void Window::updateScreen() const {
     }
 }
 
+void Window::exportToBMP() const noexcept
+{ 
+    ::exportToBMP(static_cast<uint32_t*>(m_surface->pixels), m_width, m_height);
+}
+
 Window::WindowEvent Window::updateEvents() {
     SDL_Event window_event;
     WindowEvent current_event = WindowEvent::NO_KEYS;
@@ -97,5 +104,6 @@ Window::~Window() {
     if (m_window != nullptr)
         SDL_DestroyWindow(m_window);
     SDL_Quit();
+}
 }
 #endif

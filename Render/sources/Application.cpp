@@ -28,7 +28,7 @@ void Application::processEvent(const Window::WindowEvent e) {
 
 void Application::start() {
     auto [width, height] = m_window.getExtent();
-    m_camera.setViewCircleCamera(15.f, 5.f);
+    m_camera.setViewCircleCamera(15.f, 12.f);
     m_camera.setPerspectiveProjection(glm::radians(m_camera.getZoom()), static_cast<float>(width) / height,
                                       0.1f, 256.f);
     drawLoop(); 
@@ -160,7 +160,8 @@ void Application::drawLoop() {
     m_window.clearWindow(background);
     drawMeshes();
     m_window.updateScreen();
-    
+    m_window.exportToBMP();
+
     while (!m_window.windowShouldClose()) {
         Window::WindowEvent e = m_window.updateEvents();
         processEvent(e);
