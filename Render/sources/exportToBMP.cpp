@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdint>
 #include <vector>
+#include <cstring>
 
 // CORE bitmap version
 struct BitmapInfoHeader {
