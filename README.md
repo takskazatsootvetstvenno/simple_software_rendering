@@ -26,6 +26,7 @@ This is a simple software rendering project
 ##### Keyboard controls:
 * Q and E - model rotation
 * W and S - change camera height
+* Esc - exit the program.
 
 ##### Used Libraries:
 * SDL2 - https://www.libsdl.org/
