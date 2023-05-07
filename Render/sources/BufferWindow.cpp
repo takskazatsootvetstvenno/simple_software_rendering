@@ -23,7 +23,7 @@ constexpr glm::u8vec4 getVectorFromColor(const uint32_t bufferValue) noexcept {
 
 Window::Window(uint32_t width, uint32_t height) : m_width(width), m_height(height), m_buffer(width * height) {
     std::cout << "Compiled with buffer window (off-screen rendering)!\nFormat will be: RGB888" << std::endl;
-    std::cout << "Current resolution is: (" << m_width << " x " << m_height << ")\n" << std::endl;
+    std::cout << "Current resolution is: (" << m_width << " x " << m_height << ")" << std::endl;
 }
 
 void Window::setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 color) noexcept {

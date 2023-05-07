@@ -23,6 +23,7 @@ Window::Window(uint32_t width, uint32_t height)
         auto error = std::string("Can't get window surface! Error: ") + SDL_GetError();
         throw std::runtime_error(error);
     }
+    std::cout << "Compiled with SDL window!" << std::endl;
     std::cout << "Current window pixel format is: " << SDL_GetPixelFormatName(m_surface->format->format) << std::endl;
     std::cout << "Current resolution is: (" << width << " x " << height << ")" << std::endl;
     if (m_surface->format->BitsPerPixel != 32) {

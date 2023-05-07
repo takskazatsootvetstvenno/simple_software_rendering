@@ -4,8 +4,8 @@
 #include <chrono>
 
 namespace SR {
-Application::Application(uint32_t width, uint32_t height)
-    : m_window(width, height), m_camera(m_window.getExtent()[0], m_window.getExtent()[1]) {}
+Application::Application(uint32_t width, uint32_t height, bool exportImage)
+    : m_window(width, height), m_camera(m_window.getExtent()[0], m_window.getExtent()[1]), m_exportImage(exportImage) {}
 
 void Application::setMeshes(std::vector<Mesh>&& meshes) noexcept { m_meshes = std::move(meshes); }
 
@@ -71,8 +71,7 @@ void Application::drawMeshes() {
     Color redColor{255, 0, 0, 255};
     size_t unclipped_vertices = 0;
     for (auto& mesh : m_meshes) { 
-        std::vector<std::pair<glm::vec4, bool>> transformed_vertices;
-        transformed_vertices.reserve(mesh.getIndicesData().size());
+        auto& transformed_vertices = mesh.getVertexStageBuffer();
 
         auto& inputVertexMas = mesh.getVertexData();
         auto model = mesh.getModelMatrix();
@@ -160,7 +159,8 @@ void Application::drawLoop() {
     m_window.clearWindow(background);
     drawMeshes();
     m_window.updateScreen();
-    m_window.exportToBMP();
+    if (m_exportImage)
+        m_window.exportToBMP();
 
     while (!m_window.windowShouldClose()) {
         Window::WindowEvent e = m_window.updateEvents();
