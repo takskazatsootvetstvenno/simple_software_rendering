@@ -87,8 +87,8 @@ int main(int argc, char** args) {
                       << " #2 - window height\n"
                       << " #3 - export first frame to BMP file. Can be \"Y\" or \"N\"\n"
                       << " #4 - path to model file (.obj file).\n"
-                      << "Examples:\n SoftwareRendrer 1280 720 Y ../Models/pyramid/pyramid.obj\n"
-                      << " SoftwareRendrer 800 600 N ../Models/boxTest/boxTest.obj" << std::endl;
+                      << "Examples:\n SoftwareRender 1280 720 Y ../Models/pyramid/pyramid.obj\n"
+                      << " SoftwareRender 800 600 N ../Models/boxTest/boxTest.obj" << std::endl;
             return 0;
         }
         SR::Application app(arguments.width, arguments.height, arguments.exportToBMP);
