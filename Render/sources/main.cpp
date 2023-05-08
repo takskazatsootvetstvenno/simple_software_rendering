@@ -17,28 +17,51 @@ void setGlobalLocale() {
     std::cout << "Used locale: " << locc.name() << std::endl;
 }
 
+std::pair<SR::Mesh, float> parseMeshes(objl::Mesh& mesh) {
+    SR::Mesh current_mesh;
+    std::vector<SR::vertexInput> vertexData;
+    glm::vec3 min = glm::vec3(std::numeric_limits<float>().max());
+    glm::vec3 max = glm::vec3(0);
+    for (auto& vertex : mesh.Vertices) {
+        vertexData.push_back({{vertex.Position.X, vertex.Position.Y, vertex.Position.Z},
+                              {1, 0, 1},
+                              {vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z}});
+        max.x = std::max(max.x, vertex.Position.X);
+        max.y = std::max(max.y, vertex.Position.Y);
+        max.z = std::max(max.z, vertex.Position.Z);
+        min.x = std::min(min.x, vertex.Position.X);
+        min.y = std::min(min.y, vertex.Position.Y);
+        min.z = std::min(min.z, vertex.Position.Z);
+    }
+    current_mesh.setBoundingBox(min, max);
+    current_mesh.setVertexData(std::move(vertexData));
+    using render_mesh_index_type = std::remove_reference_t<decltype(current_mesh.getIndicesData())>::value_type;
+    static_assert(std::is_same_v<render_mesh_index_type, decltype(mesh.Indices)::value_type>,
+                  "Object loader index type and render index type are different!");
+    current_mesh.setIndexData(std::move(mesh.Indices));
+
+    static float d = 1;
+    glm::vec3 delta = (max - min);
+    float result_max_distance = std::max(std::max(delta.x, delta.y), delta.z);
+    
+    return {current_mesh, result_max_distance};
+}
+
 bool loadMeshesFromOBJ(const std::string& path, SR::Application& app) {
     objl::Loader loader;
     auto result = loader.LoadFile(path);
     if (result) {
         std::cout << "\nLoading model \"" << path << "\"..." << std::endl;
         std::vector<SR::Mesh> meshes;
+        float globalMaxDistanceBB = 1.f;
         for (auto& mesh : loader.LoadedMeshes) {
-            SR::Mesh current_mesh;
-            std::vector<SR::vertexInput> vertexData;
-            for (auto& vertex : mesh.Vertices) {
-                vertexData.push_back({{vertex.Position.X, vertex.Position.Y, vertex.Position.Z},
-                                      {1, 0, 1},
-                                      {vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z}});
-            }
-            current_mesh.setVertexData(std::move(vertexData));
-            using render_mesh_index_type = std::remove_reference_t<decltype(current_mesh.getIndicesData())>::value_type;
-            static_assert(std::is_same_v<render_mesh_index_type, decltype(mesh.Indices)::value_type>,
-                          "Object loader index type and render index type are different!");
-            current_mesh.setIndexData(std::move(mesh.Indices));
-            current_mesh.setModelMatrix(
-                glm::scale(glm::mat4{1.f}, glm::vec3(10.f)));  // Set properly for model! TO DO and auto resize
-            meshes.emplace_back(std::move(current_mesh));
+            auto&& [filledMesh, MaxDistance] = parseMeshes(mesh);
+            globalMaxDistanceBB = std::max(globalMaxDistanceBB, MaxDistance);
+            meshes.emplace_back(std::move(filledMesh)); 
+        }
+        const float globalScale = 1.f / (globalMaxDistanceBB * 0.1);
+        for (auto& mesh : meshes) { 
+            mesh.setModelMatrix(glm::scale(glm::mat4{1.f}, glm::vec3(globalScale)));
         }
         app.setMeshes(std::move(meshes));
         std::cout << "Loading complete!\n" << std::endl;

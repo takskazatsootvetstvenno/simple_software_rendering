@@ -10,6 +10,10 @@ void Mesh::setIndexData(std::vector<uint32_t>&& indices) {
     m_tempTransformedVertexData.reserve(indices.size());
 }
 
+void Mesh::setBoundingBox(glm::vec3 minPoint, glm::vec3 maxPoint) noexcept { m_boundingBox = AABB{minPoint, maxPoint}; }
+
+AABB Mesh::getBoundingBox() const noexcept { return m_boundingBox; }
+
 const std::vector<vertexInput>& Mesh::getVertexData() { return m_vertexData; }
 
 const std::vector<uint32_t>& Mesh::getIndicesData() { return m_indices; }
