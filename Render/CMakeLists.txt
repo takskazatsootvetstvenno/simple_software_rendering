@@ -21,7 +21,7 @@ set(RENDER_SOURCES
 )
 
 if(MSVC)
-	 add_compile_options(/MP)
+	 add_compile_options(/MP /MT)
 endif()
 
 add_executable(${RENDER_PROJECT_NAME} ${RENDER_INCLUDES} ${RENDER_SOURCES})
@@ -30,7 +30,7 @@ target_include_directories(${RENDER_PROJECT_NAME} PUBLIC includes)
 target_include_directories(${RENDER_PROJECT_NAME} PRIVATE src)
 
 IF(NOT FORCE_BUFFER_WINDOW)
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2-static)
     target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 else()
     if(MSVC)
