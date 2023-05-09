@@ -20,10 +20,6 @@ set(RENDER_SOURCES
 	sources/exportToBMP.cpp
 )
 
-if(MSVC)
-	 add_compile_options(/MP /MT)
-endif()
-
 add_executable(${RENDER_PROJECT_NAME} ${RENDER_INCLUDES} ${RENDER_SOURCES})
 target_compile_features(${RENDER_PROJECT_NAME} PUBLIC cxx_std_20)
 target_include_directories(${RENDER_PROJECT_NAME} PUBLIC includes)
