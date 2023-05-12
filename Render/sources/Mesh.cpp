@@ -5,7 +5,7 @@ void Mesh::setModelMatrix(const glm::mat4& model) { m_modelMatrix = model; }
 
 void Mesh::setVertexData(std::vector<vertexInput>&& data) noexcept { m_vertexData = std::move(data); }
 
-void Mesh::setIndexData(std::vector<uint32_t>&& indices) {
+void Mesh::setIndexData(std::vector<unsigned int>&& indices) {
     m_indices = std::move(indices);
     m_tempTransformedVertexData.reserve(indices.size());
 }
@@ -16,7 +16,7 @@ AABB Mesh::getBoundingBox() const noexcept { return m_boundingBox; }
 
 const std::vector<vertexInput>& Mesh::getVertexData() { return m_vertexData; }
 
-const std::vector<uint32_t>& Mesh::getIndicesData() { return m_indices; }
+const std::vector<unsigned int>& Mesh::getIndicesData() { return m_indices; }
 
 const glm::mat4& Mesh::getModelMatrix() const noexcept { return m_modelMatrix; }
 

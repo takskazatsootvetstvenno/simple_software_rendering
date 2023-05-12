@@ -35,7 +35,7 @@ class Mesh {
     // This is temp vector for intermediate calculations (optimization), size - m_indices.size()
     mutable std::vector<std::pair<glm::vec4, bool>> m_tempTransformedVertexData;
     std::vector<vertexInput> m_vertexData;
-    std::vector<uint32_t> m_indices;
+    std::vector<unsigned int> m_indices;
     glm::mat4 m_modelMatrix{1.f};
     AABB m_boundingBox;
 };

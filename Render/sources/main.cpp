@@ -7,16 +7,6 @@
 #include <vector>
 #include <cstring>
 
-void setGlobalLocale() {
-    try {
-        std::locale::global(std::locale("en_US.UTF-8"));
-    } catch (const std::exception& e) {
-        std::cerr << "Error with setting global locale (en_US.UTF-8)!\n" << e.what() << std::endl;
-    }
-    std::locale locc;
-    std::cout << "Used locale: " << locc.name() << std::endl;
-}
-
 std::pair<SR::Mesh, float> parseMeshes(objl::Mesh& mesh) {
     SR::Mesh current_mesh;
     std::vector<SR::vertexInput> vertexData;
@@ -99,7 +89,6 @@ int main(int argc, char** args) {
 #else
         std::cout << "Render was built with \"Release\" profile" << std::endl;
 #endif
-        setGlobalLocale();
         ParsedArguments arguments = parseCLI(argc, args);
         if (arguments.showHelp) {
             std::cout << "\nWelcome to Simple software render!\n"
