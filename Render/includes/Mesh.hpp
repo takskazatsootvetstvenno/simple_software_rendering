@@ -22,11 +22,11 @@ class Mesh {
  public:
     void setModelMatrix(const glm::mat4& model);
     void setVertexData(std::vector<vertexInput>&& data) noexcept;
-    void setIndexData(std::vector<uint32_t>&& indices);
+    void setIndexData(std::vector<unsigned int>&& indices);
     void setBoundingBox(glm::vec3 minPoint, glm::vec3 maxPoint) noexcept;
     AABB getBoundingBox() const noexcept;
     const std::vector<vertexInput>& getVertexData();
-    const std::vector<uint32_t>& getIndicesData();
+    const std::vector<unsigned int>& getIndicesData();
     const glm::mat4& getModelMatrix() const noexcept;
     std::vector<std::pair<glm::vec4, bool>>& getVertexStageBuffer() const;
     Mesh() = default;
