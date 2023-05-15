@@ -26,10 +26,19 @@ class Window {
         KEY_PRESSED_SPACE,
         NO_KEYS
     };
+
+    struct ClearRect {
+        uint32_t min_x;
+        uint32_t max_x;
+        uint32_t min_y; 
+        uint32_t max_y;
+    };
+
     Window(uint32_t width, uint32_t height);
     void setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 color) noexcept;
     glm::u8vec4 getPixelColor(const uint32_t x, const uint32_t y) noexcept;
-    void clearWindow(glm::u8vec4 color);
+    void clearWindow(glm::u8vec4 color) noexcept;
+    void setClearRect(ClearRect clearVector) noexcept;
     std::array<uint32_t, 2> getExtent() const noexcept;
     void updateScreen() const;
     WindowEvent updateEvents();
@@ -38,6 +47,7 @@ class Window {
     ~Window();
 
  private:
+    ClearRect m_clearRect{};
     uint32_t m_width;
     uint32_t m_height;
 #ifndef FORCE_BUFFER_WINDOW

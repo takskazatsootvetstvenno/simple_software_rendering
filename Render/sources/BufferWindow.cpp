@@ -13,6 +13,14 @@ constexpr uint32_t getColorFromVector(const glm::u8vec4 color) noexcept {
     return resultColor;
 }
 
+void Window::setClearRect(const ClearRect clearVector) noexcept {
+    assert(clearVector.min_x >= 0 && "Min x should be greater than 0");
+    assert(clearVector.max_x <= m_width && "Max x should be less than screen width");
+    assert(clearVector.min_y >= 0 && "Min y should be greater than 0");
+    assert(clearVector.max_y <= m_height && "Max y should be less than height");
+    m_clearRect = clearVector;
+}
+
 // Alpha channel will be ignored
 constexpr glm::u8vec4 getVectorFromColor(const uint32_t bufferValue) noexcept {
     uint8_t red = bufferValue & (255 << 16);
@@ -21,7 +29,8 @@ constexpr glm::u8vec4 getVectorFromColor(const uint32_t bufferValue) noexcept {
     return {red, green, blue, 255};
 }
 
-Window::Window(uint32_t width, uint32_t height) : m_width(width), m_height(height), m_buffer(width * height) {
+Window::Window(uint32_t width, uint32_t height)
+    : m_width(width), m_height(height), m_buffer(width * height), m_clearRect{width, 0, height, 0} {
     std::cout << "Compiled with buffer window (off-screen rendering)!\nFormat will be: RGB888" << std::endl;
     std::cout << "Current resolution is: (" << m_width << " x " << m_height << ")" << std::endl;
 }
@@ -35,10 +44,10 @@ glm::u8vec4 Window::getPixelColor(const uint32_t x, const uint32_t y) noexcept {
     return getVectorFromColor(m_buffer[x + y * m_width]);
 }
 
-void Window::clearWindow(const glm::u8vec4 color) {
-    auto bufferColor = getColorFromVector(color);
-    for (uint32_t y = 0; y < m_height; ++y)
-        for (uint32_t x = 0; x < m_width; ++x) 
+void Window::clearWindow(const glm::u8vec4 color) noexcept {
+    const auto bufferColor = getColorFromVector(color);
+    for (uint32_t y = m_clearRect.min_y; y < m_clearRect.max_y; ++y)
+        for (uint32_t x = m_clearRect.min_x; x < m_clearRect.max_x; ++x) 
             m_buffer[y * m_width + x] = bufferColor;
 }
 

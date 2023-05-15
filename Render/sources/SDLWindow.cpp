@@ -6,7 +6,7 @@
 extern void exportToBMP(const uint32_t* imageBuffer, const uint32_t width, const uint32_t height) noexcept;
 namespace SR {
 Window::Window(uint32_t width, uint32_t height)
-	:m_width(width), m_height(height)
+	:m_width(width), m_height(height), m_clearRect{width, 0, height, 0}
 {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         auto error = std::string("Can't init SDL! Error: ") + SDL_GetError();
@@ -46,11 +46,18 @@ glm::u8vec4 Window::getPixelColor(const uint32_t x, const uint32_t y) noexcept {
     return pixelColor;
 }
 
-void Window::clearWindow(const glm::u8vec4 color) {
+void Window::setClearRect(const ClearRect clearVector) noexcept {
+    assert(clearVector.r >= 0 && "Min x should be greater than 0");
+    assert(clearVector.g <= m_width && "Max x should be less than screen width");
+    assert(clearVector.b >= 0 && "Min y should be greater than 0");
+    assert(clearVector.a <= m_height && "Max y should be less than height");
+    m_clearRect = clearVector;
+}
+
+void Window::clearWindow(const glm::u8vec4 color) noexcept {
     auto result = SDL_FillRect(m_surface, nullptr, SDL_MapRGBA(m_surface->format, color.r, color.g, color.b, color.a));
     if (result != 0) {
-        auto error = std::string("Error during clearing surface!") + SDL_GetError();
-        throw std::runtime_error(error);
+        std::cerr << "Error during clearing surface!\nSDL_ERROR: " << SDL_GetError();
     }
 }
 

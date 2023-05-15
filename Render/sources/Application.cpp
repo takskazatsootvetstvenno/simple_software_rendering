@@ -63,6 +63,13 @@ void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, Color color) {
     drawLine(p2.x, p2.y, p3.x, p3.y, color);
     drawLine(p3.x, p3.y, p1.x, p1.y, color);
 }
+static inline void checkClearBoards(Window::ClearRect& rect, float x, float y) noexcept
+{
+    if (x < rect.min_x) rect.min_x = x;
+    if (x > rect.max_x) rect.max_x = x;
+    if (y < rect.min_y) rect.min_y = y;
+    if (y > rect.max_y) rect.max_y = y;
+}
 
 void Application::drawMeshes() { 
     glm::mat4 view = m_camera.getView(); 
@@ -70,6 +77,8 @@ void Application::drawMeshes() {
     glm::mat4 screen = m_camera.getNDCtoScreenMatrix();
     Color redColor{255, 0, 0, 255};
     size_t unclipped_vertices = 0;
+    Window::ClearRect clearRect = 
+        {m_window.getExtent()[0], 0, m_window.getExtent()[1], 0};
     for (auto& mesh : m_meshes) { 
         auto& transformed_vertices = mesh.getVertexStageBuffer();
 
@@ -108,7 +117,7 @@ void Application::drawMeshes() {
             v = screen * v;
         }
         // transformed_vertices contains 2d vertices after perpective division
-
+        
         for (size_t i = 0; i < transformed_vertices.size(); i += 3) {
             bool v1_clipped = transformed_vertices[i].second;
             bool v2_clipped = transformed_vertices[i + 1].second;
@@ -118,6 +127,11 @@ void Application::drawMeshes() {
             auto v2 = transformed_vertices[i + 1].first;
             auto v3 = transformed_vertices[i + 2].first;
             if (v1.x < 0 || v2.x < 0 || v3.x < 0 || v1.y < 0 || v2.y < 0 || v3.y < 0) continue;
+
+            checkClearBoards(clearRect, v1.x, v1.y);
+            checkClearBoards(clearRect, v2.x, v2.y);
+            checkClearBoards(clearRect, v3.x, v3.y);
+
             if (!v1_clipped && !v2_clipped) {
                 drawLine(
                     static_cast<u32>(v1.x), static_cast<u32>(v1.y),
@@ -138,6 +152,7 @@ void Application::drawMeshes() {
             }
         }
     }
+    m_window.setClearRect(clearRect);
 #ifndef NDEBUG
     size_t all_vertices = 0;
     for (auto mesh : m_meshes) { all_vertices += mesh.getVertexData().size(); }
@@ -169,9 +184,20 @@ void Application::drawLoop() {
             m_window.clearWindow(background);
             drawMeshes();
             m_window.updateScreen();
+            
 #ifndef FORCE_BUFFER_WINDOW
             updateCameraPosition();
 #endif  // FORCE_BUFFER_WINDOW
+#ifdef PROFILE_SPEED
+            static auto start = std::chrono::system_clock::now();
+            auto end = std::chrono::system_clock::now();
+            std::cout << "Frame time, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+                      << "\nFPS: "
+                      << 1'000'000'000.0 / std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+                      << std::endl << std::endl;
+            start = end;
+#endif  // PROFILE_SPEED
+
 #ifndef NDEBUG
             std::cout << "Camera: {" << m_camera.getCameraPos().x << "," << m_camera.getCameraPos().y << ","
                                   << m_camera.getCameraPos().z << "}" << std::endl;
