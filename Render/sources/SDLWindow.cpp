@@ -47,10 +47,10 @@ glm::u8vec4 Window::getPixelColor(const uint32_t x, const uint32_t y) noexcept {
 }
 
 void Window::setClearRect(const ClearRect clearVector) noexcept {
-    assert(clearVector.r >= 0 && "Min x should be greater than 0");
-    assert(clearVector.g <= m_width && "Max x should be less than screen width");
-    assert(clearVector.b >= 0 && "Min y should be greater than 0");
-    assert(clearVector.a <= m_height && "Max y should be less than height");
+    assert(clearVector.min_x >= 0 && "Min x should be greater than 0");
+    assert(clearVector.max_x <= m_width && "Max x should be less than screen width");
+    assert(clearVector.min_y >= 0 && "Min y should be greater than 0");
+    assert(clearVector.max_y <= m_height && "Max y should be less than height");
     m_clearRect = clearVector;
 }
 
