@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <filesystem>
 
 std::pair<SR::Mesh, float> parseMeshes(objl::Mesh& mesh) {
     SR::Mesh current_mesh;
@@ -42,6 +43,13 @@ bool loadMeshesFromOBJ(const std::string& path, SR::Application& app) {
     auto result = loader.LoadFile(path);
     if (result) {
         std::cout << "\nLoading model \"" << path << "\"..." << std::endl;
+        auto scalePath = std::filesystem::path(path).parent_path() / "scale.txt";
+        float scaleFromFile = 0.f;
+        if (std::filesystem::exists(scalePath)) {
+            std::cout << "Found scale.txt in model path" << std::endl;
+            std::ifstream stream(scalePath);
+            stream >> scaleFromFile;
+        }
         std::vector<SR::Mesh> meshes;
         float globalMaxDistanceBB = 1.f;
         for (auto& mesh : loader.LoadedMeshes) {
@@ -49,10 +57,14 @@ bool loadMeshesFromOBJ(const std::string& path, SR::Application& app) {
             globalMaxDistanceBB = std::max(globalMaxDistanceBB, MaxDistance);
             meshes.emplace_back(std::move(filledMesh)); 
         }
-        const float globalScale = 1.f / (globalMaxDistanceBB * 0.1);
-        for (auto& mesh : meshes) { 
+        float globalScale = 1.f / (globalMaxDistanceBB * 0.1);
+
+        if (scaleFromFile > std::numeric_limits<float>().min())
+            globalScale = scaleFromFile;
+
+        for (auto& mesh : meshes) 
             mesh.setModelMatrix(glm::scale(glm::mat4{1.f}, glm::vec3(globalScale)));
-        }
+
         app.setMeshes(std::move(meshes));
         std::cout << "Loading complete!\n" << std::endl;
     } else {

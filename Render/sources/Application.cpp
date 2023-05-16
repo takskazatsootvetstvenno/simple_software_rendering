@@ -194,7 +194,7 @@ void Application::drawLoop() {
             std::cout << "Frame time, ms: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
                       << "\nFPS: "
                       << 1'000'000'000.0 / std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
-                      << std::endl << std::endl;
+                      << "\n" << std::endl;
             start = end;
 #endif  // PROFILE_SPEED
 
