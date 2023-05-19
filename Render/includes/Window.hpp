@@ -11,6 +11,7 @@
 class SDL_Window;
 class SDL_Surface;
 #endif
+
 namespace SR {
 
 class Window {
@@ -36,7 +37,9 @@ class Window {
 
     Window(uint32_t width, uint32_t height);
     void setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 color) noexcept;
+    void setPixel(const uint32_t x, const uint32_t y, const uint32_t color) noexcept;
     glm::u8vec4 getPixelColor(const uint32_t x, const uint32_t y) noexcept;
+    uint32_t getWindowColorFromVector(const glm::u8vec4 color) const noexcept;
     void clearWindow(glm::u8vec4 color) noexcept;
     void setClearRect(ClearRect clearVector) noexcept;
     std::array<uint32_t, 2> getExtent() const noexcept;

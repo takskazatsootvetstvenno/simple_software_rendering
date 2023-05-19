@@ -8,7 +8,7 @@ extern void exportToBMP(const uint32_t* imageBuffer, const uint32_t width, const
 namespace SR {
 
 // Alpha channel will be ignored
-constexpr uint32_t getColorFromVector(const glm::u8vec4 color) noexcept {
+uint32_t Window::getWindowColorFromVector(const glm::u8vec4 color) const noexcept {
     const uint32_t resultColor = (color[0] << 16) + (color[1] << 8) + color[2];
     return resultColor;
 }
@@ -37,7 +37,12 @@ Window::Window(uint32_t width, uint32_t height)
 
 void Window::setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 color) noexcept {
     assert(x < m_width && y < m_height && "setPixel: {x, y} outside the screen!");
-    m_buffer[x + y * m_width] = getColorFromVector(color);
+    m_buffer[x + y * m_width] = getWindowColorFromVector(color);
+}
+
+void Window::setPixel(const uint32_t x, const uint32_t y, const uint32_t color) noexcept {
+    assert(x < m_width && y < m_height && "setPixel: {x, y} outside the screen!");
+    m_buffer[x + y * m_width] = color;
 }
 
 glm::u8vec4 Window::getPixelColor(const uint32_t x, const uint32_t y) noexcept {
@@ -45,7 +50,7 @@ glm::u8vec4 Window::getPixelColor(const uint32_t x, const uint32_t y) noexcept {
 }
 
 void Window::clearWindow(const glm::u8vec4 color) noexcept {
-    const auto bufferColor = getColorFromVector(color);
+    const auto bufferColor = getWindowColorFromVector(color);
     for (uint32_t y = m_clearRect.min_y; y < m_clearRect.max_y; ++y)
         for (uint32_t x = m_clearRect.min_x; x < m_clearRect.max_x; ++x) 
             m_buffer[y * m_width + x] = bufferColor;

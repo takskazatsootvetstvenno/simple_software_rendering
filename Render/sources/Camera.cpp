@@ -27,17 +27,17 @@ void Camera::setViewCircleCamera(const float radius, const float height) {
     m_circle_radius = radius;
     m_circle_height = height;
     setViewTarget(glm::vec3(m_circle_radius * cos(m_circle_pos), m_circle_height, m_circle_radius * sin(m_circle_pos)),
-                  glm::vec3(0.f, 0.f, 0.f));
+                  glm::vec3(0.f, 1.f, 0.f));
 }
 void Camera::changeCirclePos(const float add_value) {
     m_circle_pos += add_value;
     setViewTarget(glm::vec3(m_circle_radius * cos(m_circle_pos), m_circle_height, m_circle_radius * sin(m_circle_pos)),
-                  glm::vec3(0.f, 0.f, 0.f));
+                  glm::vec3(0.f, 1.f, 0.f));
 }
 void Camera::changeCircleHeight(const float add_value) {
     m_circle_height += add_value;
     setViewTarget(glm::vec3(m_circle_radius * cos(m_circle_pos), m_circle_height, m_circle_radius * sin(m_circle_pos)),
-                  glm::vec3(0.f, 0.f, 0.f));
+                  glm::vec3(0.f, 1.f, 0.f));
 }
 
 void Camera::updateScreenSize(uint32_t screenWidth, uint32_t sreenHeight) noexcept {

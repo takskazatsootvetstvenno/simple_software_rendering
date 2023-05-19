@@ -2,8 +2,10 @@
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
+#include <type_traits>
 
 namespace SR {
+
 Application::Application(uint32_t width, uint32_t height, bool exportImage)
     : m_window(width, height), m_camera(m_window.getExtent()[0], m_window.getExtent()[1]), m_exportImage(exportImage) {}
 
@@ -33,19 +35,25 @@ void Application::start() {
                                       0.1f, 256.f);
     drawLoop(); 
 }
-
-void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y2, Color color = Color{255}) {
+template<typename ColorT>
+void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y2, ColorT color) noexcept {
     u32 max_x = std::max(x1, x2);
     u32 min_x = std::min(x1, x2);
     u32 max_y = std::max(y1, y2);
     u32 min_y = std::min(y1, y2);
+    uint32_t pixelColor;
+    if constexpr (std::is_same_v<ColorT, uint32_t> == true)
+        pixelColor = color;
+    else 
+        pixelColor = m_window.getWindowColorFromVector(color);
+
     if (max_x - min_x > max_y - min_y) {
         float denominator = static_cast<float>(x1) - x2;
         float k = (static_cast<float>(y1) - y2) / denominator;
         float b = (static_cast<float>(x1) * y2 - x2 * y1) / denominator;
         for (u32 x = min_x; x < max_x; ++x) {
             float y = k * x + b;
-            m_window.setPixel(x, y, color);
+            m_window.setPixel(x, y, pixelColor);
         }
     } else {
         float denominator = static_cast<float>(y1) - y2;
@@ -53,12 +61,12 @@ void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y
         float b = (static_cast<float>(x1) * y2 - x2 * y1) / denominator;
         for (u32 y = min_y; y < max_y; ++y) {
             float x = k * y - b; 
-            m_window.setPixel(x, y, color);
+            m_window.setPixel(x, y, pixelColor);
         }
     }
 }
 
-void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, Color color) {
+void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, Color color) noexcept {
     drawLine(p1.x, p1.y, p2.x, p2.y, color);
     drawLine(p2.x, p2.y, p3.x, p3.y, color);
     drawLine(p3.x, p3.y, p1.x, p1.y, color);
@@ -76,6 +84,7 @@ void Application::drawMeshes() {
     glm::mat4 projection = m_camera.getProjection();
     glm::mat4 screen = m_camera.getNDCtoScreenMatrix();
     Color redColor{255, 0, 0, 255};
+    uint32_t windowColor = m_window.getWindowColorFromVector(redColor);
     size_t unclipped_vertices = 0;
     Window::ClearRect clearRect = 
         {m_window.getExtent()[0], 0, m_window.getExtent()[1], 0};
@@ -126,29 +135,37 @@ void Application::drawMeshes() {
             auto v1 = transformed_vertices[i].first;
             auto v2 = transformed_vertices[i + 1].first;
             auto v3 = transformed_vertices[i + 2].first;
-            if (v1.x < 0 || v2.x < 0 || v3.x < 0 || v1.y < 0 || v2.y < 0 || v3.y < 0) continue;
 
             checkClearBoards(clearRect, v1.x, v1.y);
             checkClearBoards(clearRect, v2.x, v2.y);
             checkClearBoards(clearRect, v3.x, v3.y);
+            if (!v1_clipped && !v2_clipped && !v3_clipped) {
+                drawLine(static_cast<u32>(v1.x), static_cast<u32>(v1.y), static_cast<u32>(v2.x), static_cast<u32>(v2.y),
+                         windowColor);
+                drawLine(static_cast<u32>(v2.x), static_cast<u32>(v2.y), static_cast<u32>(v3.x), static_cast<u32>(v3.y),
+                         windowColor);
+                drawLine(static_cast<u32>(v3.x), static_cast<u32>(v3.y), static_cast<u32>(v1.x), static_cast<u32>(v1.y),
+                         windowColor);
+                continue;
+            }
 
             if (!v1_clipped && !v2_clipped) {
                 drawLine(
                     static_cast<u32>(v1.x), static_cast<u32>(v1.y),
                     static_cast<u32>(v2.x), static_cast<u32>(v2.y),
-                    redColor);
+                         windowColor);
             }
             if (!v2_clipped && !v3_clipped) {
                 drawLine(
                     static_cast<u32>(v2.x), static_cast<u32>(v2.y),
                     static_cast<u32>(v3.x), static_cast<u32>(v3.y),
-                    redColor);
+                         windowColor);
             }
             if (!v3_clipped && !v1_clipped) {
                 drawLine(
                     static_cast<u32>(v3.x), static_cast<u32>(v3.y),
                     static_cast<u32>(v1.x), static_cast<u32>(v1.y),
-                    redColor);
+                         windowColor);
             }
         }
     }

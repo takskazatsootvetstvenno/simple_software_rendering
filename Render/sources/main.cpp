@@ -78,7 +78,7 @@ struct ParsedArguments {
     uint32_t height = 720;
     bool exportToBMP = true;
     bool showHelp = false;
-    const char* pathToFile = "../Models/pyramid/pyramid.obj";
+    const char* pathToFile = "../Models/teapot/teapot.obj";
 };
 
 ParsedArguments parseCLI(const int argc, char** args) noexcept {
