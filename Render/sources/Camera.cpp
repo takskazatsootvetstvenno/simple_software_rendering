@@ -17,10 +17,37 @@ void Camera::loadDefaultCircleCamera() {
 void Camera::setPerspectiveProjection(float fovy, float aspect, float near, float far) {
     m_projection = glm::perspective(fovy, aspect, near, far);
 }
+inline glm::vec3 normalizeVec3(glm::vec3 inputVec) noexcept { 
+    auto length = powf(dot(inputVec, inputVec), 0.5f);
+    return glm::vec3(inputVec.r / length, inputVec.g / length, inputVec.b / length);
+}
 
 void Camera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up) {
     m_cameraPosition = position;
+#if 0
     m_view = glm::lookAt(position, target, up);
+    vec<3, T, Q> const& eye, vec<3, T, Q> const& center, vec<3, T, Q> const& up
+#else //lookAtLH
+    glm::vec3 const f(normalizeVec3(target - position));
+    glm::vec3 const s(normalizeVec3(cross(up, f)));
+    glm::vec3 const u(cross(f, s));
+
+    glm::mat4 Result(1);
+    Result[0][0] = s.x;
+    Result[1][0] = s.y;
+    Result[2][0] = s.z;
+    Result[0][1] = u.x;
+    Result[1][1] = u.y;
+    Result[2][1] = u.z;
+    Result[0][2] = f.x;
+    Result[1][2] = f.y;
+    Result[2][2] = f.z;
+    Result[3][0] = -dot(s, position);
+    Result[3][1] = -dot(u, position);
+    Result[3][2] = -dot(f, position);
+    m_view =  Result;
+#endif
+
 }
 
 void Camera::setViewCircleCamera(const float radius, const float height) {
