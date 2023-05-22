@@ -35,17 +35,14 @@ void Application::start() {
                                       0.1f, 256.f);
     drawLoop(); 
 }
+
 template<typename ColorT>
 void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y2, ColorT color) noexcept {
     u32 max_x = std::max(x1, x2);
     u32 min_x = std::min(x1, x2);
     u32 max_y = std::max(y1, y2);
     u32 min_y = std::min(y1, y2);
-    uint32_t pixelColor;
-    if constexpr (std::is_same_v<ColorT, uint32_t> == true)
-        pixelColor = color;
-    else 
-        pixelColor = m_window.getWindowColorFromVector(color);
+    auto pixelColor = color;
 
     if (max_x - min_x > max_y - min_y) {
         float denominator = static_cast<float>(x1) - x2;
@@ -64,6 +61,10 @@ void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y
             m_window.setPixel(x, y, pixelColor);
         }
     }
+}
+template<>
+void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y2, glm::uvec4 color) noexcept {
+    drawLine(x1, y1, x2, y2, m_window.getWindowColorFromVector(color));
 }
 
 void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, Color color) noexcept {
@@ -84,7 +85,7 @@ void Application::drawMeshes() {
     glm::mat4 projection = m_camera.getProjection();
     glm::mat4 screen = m_camera.getNDCtoScreenMatrix();
     Color redColor{255, 0, 0, 255};
-    uint32_t windowColor = m_window.getWindowColorFromVector(redColor);
+    auto windowColor = m_window.getWindowColorFromVector(redColor);
     size_t unclipped_vertices = 0;
     Window::ClearRect clearRect = 
         {m_window.getExtent()[0], 0, m_window.getExtent()[1], 0};

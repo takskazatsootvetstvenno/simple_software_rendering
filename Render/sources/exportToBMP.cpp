@@ -19,7 +19,7 @@ static_assert(sizeof(BitmapInfoHeader) == 12, "InfoHeader size should be 14 byte
 static constexpr uint32_t BITMAP_FILE_HEADER_SIZE = 14;
 using BitmapFileHeaderInBytes = std::array<uint8_t, BITMAP_FILE_HEADER_SIZE>;
 
-BitmapFileHeaderInBytes createBitmapFileHeader(uint32_t bfSize, uint32_t bfOffBits) noexcept {
+static BitmapFileHeaderInBytes createBitmapFileHeader(uint32_t bfSize, uint32_t bfOffBits) noexcept {
     BitmapFileHeaderInBytes bitmapFileHeader{};
 
     if constexpr (std::endian::native == std::endian::big) {
@@ -34,7 +34,8 @@ BitmapFileHeaderInBytes createBitmapFileHeader(uint32_t bfSize, uint32_t bfOffBi
     return bitmapFileHeader;
 }
 
-void exportToBMP(const uint32_t* imageBuffer, const uint32_t width, const uint32_t height) noexcept {
+template<typename imageType>
+static void fillBMP(const imageType* imageBuffer, const uint32_t width, const uint32_t height) {
     try {
         std::ofstream file("RenderedImage.bmp", std::ios::out | std::ios::binary);
 
@@ -42,17 +43,17 @@ void exportToBMP(const uint32_t* imageBuffer, const uint32_t width, const uint32
             std::cerr << "exportToBMP: Can't create and open file for writing! File: RenderedImage.bmp ";
             return;
         }
-
-        const uint32_t bufferSize = sizeof(uint32_t) * width * height;
+        const uint32_t bufferSize = sizeof(imageType) * width * height;
         const uint32_t bfSize = bufferSize + BITMAP_FILE_HEADER_SIZE;
         const uint32_t bfOffBits = BITMAP_FILE_HEADER_SIZE + sizeof(BitmapInfoHeader);
         BitmapFileHeaderInBytes bitmapFileHeader = createBitmapFileHeader(bfSize, bfOffBits);
         BitmapInfoHeader infoHeader;
         infoHeader.biWidth = width;
         infoHeader.biHeight = height;
+        infoHeader.biBitCount = sizeof(imageType) * 8;
 
         // In BMP format pixel buffer is mirrored vertically
-        std::vector<uint32_t> mirrorImageBuffer(width * height);
+        std::vector<imageType> mirrorImageBuffer(width * height);
         std::memcpy(mirrorImageBuffer.data(), imageBuffer, bufferSize);
 
         for (uint32_t i = 0; i < height / 2; ++i)
@@ -62,6 +63,15 @@ void exportToBMP(const uint32_t* imageBuffer, const uint32_t width, const uint32
         file.write(reinterpret_cast<const char*>(bitmapFileHeader.data()), BITMAP_FILE_HEADER_SIZE);
         file.write(reinterpret_cast<const char*>(&infoHeader), sizeof(BitmapInfoHeader));
         file.write(reinterpret_cast<const char*>(mirrorImageBuffer.data()), bufferSize);
+    } catch (const std::exception& e) {
+        std::cerr << "exportToBMP(uint32_t): Critic exception: " << e.what() << std::endl;
+    }
+};
 
-    } catch (const std::exception& e) { std::cerr << "exportToBMP: Critic exception: " << e.what() << std::endl; }
+void exportToBMP(const uint32_t* imageBuffer, const uint32_t width, const uint32_t height) noexcept {
+    fillBMP(imageBuffer, width, height);
+}
+
+void exportToBMP(const uint16_t* imageBuffer, const uint32_t width, const uint32_t height) noexcept {
+    fillBMP(imageBuffer, width, height);
 }

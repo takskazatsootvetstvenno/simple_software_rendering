@@ -30,7 +30,7 @@ Window::Window(uint32_t width, uint32_t height)
         std::cerr << "Warning! Not a 32-bit per pixel surface!" << std::endl;
     }
 }
-uint32_t Window::getWindowColorFromVector(const glm::u8vec4 color) const noexcept{
+buffer_type Window::getWindowColorFromVector(const glm::u8vec4 color) const noexcept {
     return SDL_MapRGBA(m_surface->format, color.r, color.g, color.b, color.a);
 }
 
@@ -42,6 +42,13 @@ void Window::setPixel(const uint32_t x, const uint32_t y, const glm::u8vec4 colo
 }
 
 void Window::setPixel(const uint32_t x, const uint32_t y, const uint32_t color) noexcept {
+    assert(x < m_width && y < m_height && "setPixel: {x, y} outside the screen!");
+    uint32_t* buffer = static_cast<uint32_t*>(m_surface->pixels);
+    auto width = m_surface->w;
+    buffer[x + y * width] = color;
+}
+
+void Window::setPixel(const uint32_t x, const uint32_t y, const uint16_t color) noexcept {
     assert(x < m_width && y < m_height && "setPixel: {x, y} outside the screen!");
     uint32_t* buffer = static_cast<uint32_t*>(m_surface->pixels);
     auto width = m_surface->w;
