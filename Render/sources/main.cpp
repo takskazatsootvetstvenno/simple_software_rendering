@@ -31,7 +31,6 @@ std::pair<SR::Mesh, float> parseMeshes(objl::Mesh& mesh) {
                   "Object loader index type and render index type are different!");
     current_mesh.setIndexData(std::move(mesh.Indices));
 
-    static float d = 1;
     glm::vec3 delta = (max - min);
     float result_max_distance = std::max(std::max(delta.x, delta.y), delta.z);
     
@@ -57,7 +56,7 @@ bool loadMeshesFromOBJ(const std::string& path, SR::Application& app) {
             globalMaxDistanceBB = std::max(globalMaxDistanceBB, MaxDistance);
             meshes.emplace_back(std::move(filledMesh)); 
         }
-        float globalScale = 1.f / (globalMaxDistanceBB * 0.1);
+        float globalScale = 1.f / (globalMaxDistanceBB * 0.1f);
 
         if (scaleFromFile > std::numeric_limits<float>().min())
             globalScale = scaleFromFile;

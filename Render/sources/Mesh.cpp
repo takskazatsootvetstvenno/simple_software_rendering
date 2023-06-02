@@ -7,7 +7,7 @@ void Mesh::setVertexData(std::vector<vertexInput>&& data) noexcept { m_vertexDat
 
 void Mesh::setIndexData(std::vector<unsigned int>&& indices) {
     m_indices = std::move(indices);
-    m_tempTransformedVertexData.reserve(indices.size());
+    m_tempTransformedVertexData.reserve(m_indices.size());
 }
 
 void Mesh::setBoundingBox(glm::vec3 minPoint, glm::vec3 maxPoint) noexcept { m_boundingBox = AABB{minPoint, maxPoint}; }

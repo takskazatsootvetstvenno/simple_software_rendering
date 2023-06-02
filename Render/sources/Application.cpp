@@ -25,6 +25,7 @@ void Application::processEvent(const Window::WindowEvent e) {
         case Window::WindowEvent::KEY_PRESSED_Q: m_camera.changeCirclePos(-5.f * 3.141592f / 180.f); break;
         case Window::WindowEvent::KEY_PRESSED_E: m_camera.changeCirclePos(5.f * 3.141592f / 180.f); break;
         case Window::WindowEvent::KEY_PRESSED_SPACE: m_camera.loadDefaultCircleCamera(); break;
+        default: break;
     }
 }
 
@@ -49,7 +50,7 @@ void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y
         float k = (static_cast<float>(y1) - y2) / denominator;
         float b = (static_cast<float>(x1) * y2 - x2 * y1) / denominator;
         for (u32 x = min_x; x < max_x; ++x) {
-            float y = k * x + b;
+            u32 y = k * x + b;
             m_window.setPixel(x, y, pixelColor);
         }
     } else {
@@ -57,7 +58,7 @@ void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y
         float k = (static_cast<float>(x1) - x2) / denominator;
         float b = (static_cast<float>(x1) * y2 - x2 * y1) / denominator;
         for (u32 y = min_y; y < max_y; ++y) {
-            float x = k * y - b; 
+            u32 x = k * y - b; 
             m_window.setPixel(x, y, pixelColor);
         }
     }
@@ -74,10 +75,10 @@ void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, Color color) noexce
 }
 static inline void checkClearBoards(Window::ClearRect& rect, float x, float y) noexcept
 {
-    if (x < rect.min_x) rect.min_x = x;
-    if (x > rect.max_x) rect.max_x = x;
-    if (y < rect.min_y) rect.min_y = y;
-    if (y > rect.max_y) rect.max_y = y;
+    if (x < rect.min_x) rect.min_x = static_cast<uint32_t>(x);
+    if (x > rect.max_x) rect.max_x = static_cast<uint32_t>(std::ceil(x));
+    if (y < rect.min_y) rect.min_y = static_cast<uint32_t>(y);
+    if (y > rect.max_y) rect.max_y = static_cast<uint32_t>(std::ceil(y));
 }
 
 void Application::drawMeshes() { 
@@ -93,7 +94,7 @@ void Application::drawMeshes() {
         auto& transformed_vertices = mesh.getVertexStageBuffer();
 
         auto& inputVertexMas = mesh.getVertexData();
-        auto model = mesh.getModelMatrix();
+        glm::mat4 model = mesh.getModelMatrix();
         glm::mat4 MVP = projection * view * model;
         for (auto vertex_index : mesh.getIndicesData())
         {  
@@ -173,7 +174,7 @@ void Application::drawMeshes() {
     m_window.setClearRect(clearRect);
 #ifndef NDEBUG
     size_t all_vertices = 0;
-    for (auto mesh : m_meshes) { all_vertices += mesh.getVertexData().size(); }
+    for (auto& mesh : m_meshes) { all_vertices += mesh.getVertexData().size(); }
     std::cout << "Drawed " << unclipped_vertices << "(" << all_vertices << ")" << std::endl;
 #endif  // DEBUG
 }
@@ -181,7 +182,6 @@ void Application::drawMeshes() {
 void Application::updateCameraPosition() {
     auto now = std::chrono::system_clock::now();
     static auto last_time = now;
-    std::time_t end_time = std::chrono::system_clock::to_time_t(now);
     auto diff = now - last_time;
     m_camera.changeCirclePos(0.005f * diff.count()/1000.f * 3.141592f / 180.f);   
     last_time = now;

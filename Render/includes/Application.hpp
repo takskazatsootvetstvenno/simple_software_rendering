@@ -22,9 +22,9 @@ class Application {
     void drawLoop();
     void updateCameraPosition();
  private:
-    bool m_exportImage;
     Window m_window;
     Camera m_camera;
     std::vector<Mesh> m_meshes;
+    bool m_exportImage;
 };
 }  // namespace SR

@@ -37,6 +37,6 @@ class Mesh {
     std::vector<vertexInput> m_vertexData;
     std::vector<unsigned int> m_indices;
     glm::mat4 m_modelMatrix{1.f};
-    AABB m_boundingBox;
+    AABB m_boundingBox{};
 };
 }  // namespace SR

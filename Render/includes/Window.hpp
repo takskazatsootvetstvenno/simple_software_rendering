@@ -8,8 +8,8 @@
 #include <glm/glm.hpp>
 
 #ifndef FORCE_BUFFER_WINDOW
-class SDL_Window;
-class SDL_Surface;
+struct SDL_Window;
+struct SDL_Surface;
 #endif
 
 #if defined(FORCE_565_WINDOW_BUFFER) && defined(FORCE_BUFFER_WINDOW)
@@ -61,10 +61,10 @@ class Window {
 
 
  private:
-    ClearRect m_clearRect{};
-    ClearRect m_lastClearRect{};
     uint32_t m_width;
     uint32_t m_height;
+    ClearRect m_clearRect{};
+    ClearRect m_lastClearRect{};
 #ifndef FORCE_BUFFER_WINDOW
     SDL_Window* m_window = nullptr;
     SDL_Surface* m_surface = nullptr;

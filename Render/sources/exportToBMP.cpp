@@ -48,8 +48,8 @@ static void fillBMP(const imageType* imageBuffer, const uint32_t width, const ui
         const uint32_t bfOffBits = BITMAP_FILE_HEADER_SIZE + sizeof(BitmapInfoHeader);
         BitmapFileHeaderInBytes bitmapFileHeader = createBitmapFileHeader(bfSize, bfOffBits);
         BitmapInfoHeader infoHeader;
-        infoHeader.biWidth = width;
-        infoHeader.biHeight = height;
+        infoHeader.biWidth = static_cast<uint16_t>(width);
+        infoHeader.biHeight = static_cast<uint16_t>(height);
         infoHeader.biBitCount = sizeof(imageType) * 8;
 
         // In BMP format pixel buffer is mirrored vertically

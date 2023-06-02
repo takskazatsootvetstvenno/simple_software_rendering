@@ -115,6 +115,7 @@ Window::WindowEvent Window::updateEvents() {
                     case SDL_SCANCODE_E: current_event = WindowEvent::KEY_PRESSED_E; break;
                     case SDL_SCANCODE_SPACE: current_event = WindowEvent::KEY_PRESSED_SPACE; break;
                     case SDL_SCANCODE_ESCAPE: m_shouldClose = true; break;
+                    default: break;
                 }
                 break;
         }
