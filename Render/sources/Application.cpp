@@ -37,6 +37,16 @@ void Application::start() {
     drawLoop(); 
 }
 
+inline std::array<glm::uvec2, 2> findBoundingBox(uVec2 p1, uVec2 p2, uVec2 p3) noexcept {
+    uVec2 leftDownPoint = {
+        std::min({p1.x, p2.x, p3.x}),
+        std::min({p1.y, p2.y, p3.y})};
+    uVec2 topRightPoint = {
+        std::max({p1.x, p2.x, p3.x}),
+        std::max({p1.y, p2.y, p3.y})};
+    return {leftDownPoint, topRightPoint};
+}
+
 template<typename ColorT>
 void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y2, ColorT color) noexcept {
     u32 max_x = std::max(x1, x2);
@@ -68,11 +78,37 @@ void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y
     drawLine(x1, y1, x2, y2, m_window.getWindowColorFromVector(color));
 }
 
-void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, Color color) noexcept {
+inline bool vec2CrossSGN(glm::ivec2 p1, glm::ivec2 p2) noexcept {
+    return p1.x * p2.y > p2.x * p1.y;
+}
+
+inline bool isInsideTriangle(glm::ivec2 p1, glm::ivec2 p2, glm::ivec2 p3, glm::ivec2 point) noexcept { 
+    const bool sign = vec2CrossSGN(point - p1, p1 - p2);
+    return (sign == vec2CrossSGN(point - p2, p2 - p3) && sign == vec2CrossSGN(point - p3, p3 - p1));
+}
+
+template<typename ColorT>
+void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, ColorT color) noexcept {
+#if 0
     drawLine(p1.x, p1.y, p2.x, p2.y, color);
     drawLine(p2.x, p2.y, p3.x, p3.y, color);
     drawLine(p3.x, p3.y, p1.x, p1.y, color);
+#else
+
+    auto boundingBox = findBoundingBox(p1, p2, p3);
+
+    for (u32 y = boundingBox[0].y; y < boundingBox[1].y; ++y) {
+        for (u32 x = boundingBox[0].x; x < boundingBox[1].x; ++x) {
+            if (isInsideTriangle(p1, p2, p3, {x, y})) 
+            { m_window.setPixel(x, y, color); }
+        }
+    }
+    drawLine(p1.x, p1.y, p2.x, p2.y, ColorT{0});
+    drawLine(p2.x, p2.y, p3.x, p3.y, ColorT{0});
+    drawLine(p3.x, p3.y, p1.x, p1.y, ColorT{0});
+#endif
 }
+
 static inline void checkClearBoards(Window::ClearRect& rect, float x, float y) noexcept
 {
     if (x < rect.min_x) rect.min_x = static_cast<uint32_t>(x);
@@ -142,15 +178,17 @@ void Application::drawMeshes() {
             checkClearBoards(clearRect, v2.x, v2.y);
             checkClearBoards(clearRect, v3.x, v3.y);
             if (!v1_clipped && !v2_clipped && !v3_clipped) {
-                drawLine(static_cast<u32>(v1.x), static_cast<u32>(v1.y), static_cast<u32>(v2.x), static_cast<u32>(v2.y),
+                /* drawLine(static_cast<u32>(v1.x), static_cast<u32>(v1.y), static_cast<u32>(v2.x),
+                            static_cast<u32>(v2.y),
                          windowColor);
                 drawLine(static_cast<u32>(v2.x), static_cast<u32>(v2.y), static_cast<u32>(v3.x), static_cast<u32>(v3.y),
                          windowColor);
                 drawLine(static_cast<u32>(v3.x), static_cast<u32>(v3.y), static_cast<u32>(v1.x), static_cast<u32>(v1.y),
-                         windowColor);
+                         windowColor);*/
+                drawTriangle({v1.x, v1.y}, {v2.x, v2.y}, {v3.x, v3.y}, windowColor);
                 continue;
             }
-
+            /*
             if (!v1_clipped && !v2_clipped) {
                 drawLine(
                     static_cast<u32>(v1.x), static_cast<u32>(v1.y),
@@ -168,7 +206,7 @@ void Application::drawMeshes() {
                     static_cast<u32>(v3.x), static_cast<u32>(v3.y),
                     static_cast<u32>(v1.x), static_cast<u32>(v1.y),
                          windowColor);
-            }
+            }*/
         }
     }
     m_window.setClearRect(clearRect);
