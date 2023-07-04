@@ -20,7 +20,7 @@ const std::vector<unsigned int>& Mesh::getIndicesData() { return m_indices; }
 
 const glm::mat4& Mesh::getModelMatrix() const noexcept { return m_modelMatrix; }
 
-std::vector<std::pair<glm::vec4, bool>>& Mesh::getVertexStageBuffer() const {
+std::vector<VStoFSBuffer>& Mesh::getVertexStageBuffer() const {
     m_tempTransformedVertexData.clear();
     return m_tempTransformedVertexData;
 }

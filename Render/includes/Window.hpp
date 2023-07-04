@@ -53,6 +53,8 @@ class Window {
     void setClearRect(ClearRect clearVector) noexcept;
     ClearRect getOverralClearRect() const noexcept;
     std::array<uint32_t, 2> getExtent() const noexcept;
+    uint32_t width() const noexcept { return m_width; };
+    uint32_t height() const noexcept { return m_height; };
     void updateScreen() const;
     WindowEvent updateEvents();
     bool windowShouldClose() noexcept;

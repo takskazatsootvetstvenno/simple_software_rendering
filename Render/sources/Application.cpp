@@ -2,8 +2,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
+#include <array>
 #include <type_traits>
+#include <algorithm>
+#include <thread>
 
+static constexpr int NUM_OF_THREADS = 16;
 namespace SR {
 
 Application::Application(uint32_t width, uint32_t height, bool exportImage)
@@ -78,12 +82,12 @@ void Application::drawLine(const u32 x1, const u32 y1, const u32 x2, const u32 y
     drawLine(x1, y1, x2, y2, m_window.getWindowColorFromVector(color));
 }
 
-inline bool vec2CrossSGN(glm::ivec2 p1, glm::ivec2 p2) noexcept {
-    return p1.x * p2.y > p2.x * p1.y;
+inline bool vec2CrossSGN(glm::vec2 p1, glm::vec2 p2) noexcept {
+    return p1.x * p2.y >= p2.x * p1.y;
 }
 
-inline bool isInsideTriangle(glm::ivec2 p1, glm::ivec2 p2, glm::ivec2 p3, glm::ivec2 point) noexcept { 
-    const bool sign = vec2CrossSGN(point - p1, p1 - p2);
+inline bool isInsideTriangle(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 point, bool& sign) noexcept { 
+    sign = vec2CrossSGN(point - p1, p1 - p2);
     return (sign == vec2CrossSGN(point - p2, p2 - p3) && sign == vec2CrossSGN(point - p3, p3 - p1));
 }
 
@@ -96,10 +100,10 @@ void Application::drawTriangle(uVec2 p1, uVec2 p2, uVec2 p3, ColorT color) noexc
 #else
 
     auto boundingBox = findBoundingBox(p1, p2, p3);
-
+    bool sign = false;
     for (u32 y = boundingBox[0].y; y < boundingBox[1].y; ++y) {
         for (u32 x = boundingBox[0].x; x < boundingBox[1].x; ++x) {
-            if (isInsideTriangle(p1, p2, p3, {x, y})) 
+            if (isInsideTriangle(p1, p2, p3, {x, y}, sign)) 
             { m_window.setPixel(x, y, color); }
         }
     }
@@ -116,6 +120,59 @@ static inline void checkClearBoards(Window::ClearRect& rect, float x, float y) n
     if (y < rect.min_y) rect.min_y = static_cast<uint32_t>(y);
     if (y > rect.max_y) rect.max_y = static_cast<uint32_t>(std::ceil(y));
 }
+const auto light_position = glm::normalize(glm::vec3(2.f, 1.f, 4.f));
+
+static inline bool isTriangle(const glm::vec2 A, const glm::vec2 B, const glm::vec2 C) noexcept {
+    return (C.x - A.x) * (B.y - A.y) - (B.x - A.x) * (C.y - A.y) <= std::numeric_limits<float>::min();
+}
+
+void gpu_thread(const int num_thread, std::vector<VStoFSBuffer>& transformed_vertices, Window& window) noexcept {
+    for (int i = 0; i < window.height(); ++i) {
+        for (int j = num_thread; j < window.width(); j += NUM_OF_THREADS) {
+            float z_buffer = std::numeric_limits<float>::max();
+            for (uint32_t k = 0; k < transformed_vertices.size(); k += 3) {
+                bool sign = false;
+                auto A = glm::vec3(transformed_vertices[k].pos);
+                auto B = glm::vec3(transformed_vertices[k + 1].pos);
+                auto C = glm::vec3(transformed_vertices[k + 2].pos);
+                if (isTriangle(A, B, C) && isInsideTriangle(A, B, C, glm::vec2{j, i}, sign)) {
+                    if (sign == false) continue;
+                    glm::vec3 AB = glm::vec3(B - A);
+                    glm::vec3 AC = glm::vec3(C - A);
+                    auto VertNormal = glm::normalize(glm::cross(AB, AC));
+                    auto& An = VertNormal.x;
+                    auto& Bn = VertNormal.y;
+                    auto& Cn = VertNormal.z;
+
+                    const float point_z = A.z - (An * (j - A.x) + Bn * (i - A.y)) / Cn;
+                    glm::vec3 P = glm::vec3{j, i, point_z};
+                    auto PA_len = glm::length(P - A);
+                    auto PB_len = glm::length(P - B);
+                    auto PC_len = glm::length(P - C);
+                    auto A_weight = glm::length(glm::cross(P - B, P - C));
+                    auto B_weight = glm::length(glm::cross(P - A, P - C));
+                    auto C_weight = glm::length(glm::cross(P - A, P - B));
+
+                    const auto max_weight = std::max({A_weight, B_weight, C_weight});
+
+                    glm::vec3 normal1 = transformed_vertices[k].normal;
+                    glm::vec3 normal2 = transformed_vertices[k + 1].normal;
+                    glm::vec3 normal3 = transformed_vertices[k + 2].normal;
+
+                    glm::vec3 normal = glm::normalize((normal1 * (A_weight / max_weight)) + 
+                         normal2 * (B_weight / max_weight) + 
+                         normal3 * (C_weight / max_weight));
+                    glm::vec3 result_color = glm::vec3{245.f} * std::max(glm::dot(normal, light_position), 0.f) +
+                                             glm::vec3{10.f, 10.f, 10.f};
+                    if (point_z < z_buffer) {
+                        z_buffer = point_z;
+                        window.setPixel(j, i, window.getWindowColorFromVector(glm::vec4{result_color, 1.f}));
+                    }
+                }
+            }
+        }
+    }
+}
 
 void Application::drawMeshes() { 
     glm::mat4 view = m_camera.getView(); 
@@ -126,88 +183,36 @@ void Application::drawMeshes() {
     size_t unclipped_vertices = 0;
     Window::ClearRect clearRect = 
         {m_window.getExtent()[0], 0, m_window.getExtent()[1], 0};
+
     for (auto& mesh : m_meshes) { 
         auto& transformed_vertices = mesh.getVertexStageBuffer();
-
         auto& inputVertexMas = mesh.getVertexData();
         glm::mat4 model = mesh.getModelMatrix();
         glm::mat4 MVP = projection * view * model;
         for (auto vertex_index : mesh.getIndicesData())
         {  
-            auto& resultPos = inputVertexMas[vertex_index].position;
-            auto pos = MVP * glm::vec4(resultPos, 1.f);
-            bool isClipped = false;
-            if ((pos.x > pos.w || pos.x < -pos.w) ||
-                (pos.y > pos.w || pos.y < -pos.w) ||
-                (pos.z > pos.w || pos.z < -pos.w))
-            {
-                isClipped = true;
-            }
-            if (isClipped == false)
-            {
-               ++unclipped_vertices;
-            }
-            transformed_vertices.emplace_back(pos, isClipped);
+            auto& inputPosition = inputVertexMas[vertex_index].position;
+            auto& inputNormals = inputVertexMas[vertex_index].normal;
+            auto pos = MVP * glm::vec4(inputPosition, 1.f);           
+
+            //Perspective devision
+            float const w_reciprocal{1.0f / pos.w};
+            pos.x *= w_reciprocal;
+            pos.y *= w_reciprocal;
+            pos.z *= w_reciprocal;
+            pos.w = 1.f;
+
+            //To screen space
+            pos = screen * pos;
+
+            transformed_vertices.emplace_back(glm::vec3(pos), inputNormals);
         }
 
-        //transformed_vertices contains a ndc vertices
-        for (auto& vertex : transformed_vertices)
-        {
-            if (vertex.second) continue;
-            auto& v = vertex.first;
-            float const w_reciprocal{1.0f / v.w};
-            v.x *= w_reciprocal;
-            v.y *= w_reciprocal;
-            v.z *= w_reciprocal;
-            v.w = 1;
-
-            v = screen * v;
-        }
-        // transformed_vertices contains 2d vertices after perpective division
-        
-        for (size_t i = 0; i < transformed_vertices.size(); i += 3) {
-            bool v1_clipped = transformed_vertices[i].second;
-            bool v2_clipped = transformed_vertices[i + 1].second;
-            bool v3_clipped = transformed_vertices[i + 2].second;
-
-            auto v1 = transformed_vertices[i].first;
-            auto v2 = transformed_vertices[i + 1].first;
-            auto v3 = transformed_vertices[i + 2].first;
-
-            checkClearBoards(clearRect, v1.x, v1.y);
-            checkClearBoards(clearRect, v2.x, v2.y);
-            checkClearBoards(clearRect, v3.x, v3.y);
-            if (!v1_clipped && !v2_clipped && !v3_clipped) {
-                /* drawLine(static_cast<u32>(v1.x), static_cast<u32>(v1.y), static_cast<u32>(v2.x),
-                            static_cast<u32>(v2.y),
-                         windowColor);
-                drawLine(static_cast<u32>(v2.x), static_cast<u32>(v2.y), static_cast<u32>(v3.x), static_cast<u32>(v3.y),
-                         windowColor);
-                drawLine(static_cast<u32>(v3.x), static_cast<u32>(v3.y), static_cast<u32>(v1.x), static_cast<u32>(v1.y),
-                         windowColor);*/
-                drawTriangle({v1.x, v1.y}, {v2.x, v2.y}, {v3.x, v3.y}, windowColor);
-                continue;
-            }
-            /*
-            if (!v1_clipped && !v2_clipped) {
-                drawLine(
-                    static_cast<u32>(v1.x), static_cast<u32>(v1.y),
-                    static_cast<u32>(v2.x), static_cast<u32>(v2.y),
-                         windowColor);
-            }
-            if (!v2_clipped && !v3_clipped) {
-                drawLine(
-                    static_cast<u32>(v2.x), static_cast<u32>(v2.y),
-                    static_cast<u32>(v3.x), static_cast<u32>(v3.y),
-                         windowColor);
-            }
-            if (!v3_clipped && !v1_clipped) {
-                drawLine(
-                    static_cast<u32>(v3.x), static_cast<u32>(v3.y),
-                    static_cast<u32>(v1.x), static_cast<u32>(v1.y),
-                         windowColor);
-            }*/
-        }
+        std::array<std::thread, NUM_OF_THREADS> threads;
+        for (int k = 0; k < threads.size(); ++k) 
+            threads[k] = std::thread(gpu_thread, k, std::ref(transformed_vertices), std::ref(m_window));
+        for (int k = 0; k < threads.size(); ++k) 
+            threads[k].join();
     }
     m_window.setClearRect(clearRect);
 #ifndef NDEBUG

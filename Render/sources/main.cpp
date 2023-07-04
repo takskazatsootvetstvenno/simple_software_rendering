@@ -60,7 +60,7 @@ bool loadMeshesFromOBJ(const std::string& path, SR::Application& app) {
 
         if (scaleFromFile > std::numeric_limits<float>().min())
             globalScale = scaleFromFile;
-
+        globalScale *= 1.0;
         for (auto& mesh : meshes) 
             mesh.setModelMatrix(glm::scale(glm::mat4{1.f}, glm::vec3(globalScale)));
 
@@ -73,11 +73,11 @@ bool loadMeshesFromOBJ(const std::string& path, SR::Application& app) {
     return true;
 }
 struct ParsedArguments {
-    uint32_t width = 1280;
-    uint32_t height = 720;
+    uint32_t width = 480;
+    uint32_t height = 320;
     bool exportToBMP = true;
     bool showHelp = false;
-    const char* pathToFile = "../Models/teapot/teapot.obj";
+    const char* pathToFile = "../Models/sphere/sphere.obj";  
 };
 
 ParsedArguments parseCLI(const int argc, char** args) noexcept {
