@@ -18,6 +18,12 @@ struct AABB {
     glm::vec3 max;
 };
 
+struct VStoFSBuffer {
+
+    glm::vec<3, float, glm::packed> pos;
+    glm::vec<3, float, glm::packed> normal;
+};
+
 class Mesh {
  public:
     void setModelMatrix(const glm::mat4& model);
@@ -28,12 +34,12 @@ class Mesh {
     const std::vector<vertexInput>& getVertexData();
     const std::vector<unsigned int>& getIndicesData();
     const glm::mat4& getModelMatrix() const noexcept;
-    std::vector<std::pair<glm::vec4, bool>>& getVertexStageBuffer() const;
+    std::vector<VStoFSBuffer>& getVertexStageBuffer() const;
     Mesh() = default;
 
  private:
     // This is temp vector for intermediate calculations (optimization), size - m_indices.size()
-    mutable std::vector<std::pair<glm::vec4, bool>> m_tempTransformedVertexData;
+    mutable std::vector<VStoFSBuffer> m_tempTransformedVertexData;
     std::vector<vertexInput> m_vertexData;
     std::vector<unsigned int> m_indices;
     glm::mat4 m_modelMatrix{1.f};
