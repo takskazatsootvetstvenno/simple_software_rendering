@@ -1,11 +1,9 @@
+#pragma once
+
 #include <cstdint>
 #include <array>
 #include <vector>
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_LEFT_HANDED
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#include <glm/glm.hpp>
+#include "CommonDefines.hpp"
 
 #ifndef FORCE_BUFFER_WINDOW
 struct SDL_Window;

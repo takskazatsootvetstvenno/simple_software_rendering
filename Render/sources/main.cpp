@@ -10,12 +10,12 @@
 
 std::pair<SR::Mesh, float> parseMeshes(objl::Mesh& mesh) {
     SR::Mesh current_mesh;
-    std::vector<SR::vertexInput> vertexData;
+    std::vector<SR::VertexInput> vertexData;
     glm::vec3 min = glm::vec3(std::numeric_limits<float>().max());
     glm::vec3 max = glm::vec3(0);
     for (auto& vertex : mesh.Vertices) {
         vertexData.push_back({{vertex.Position.X, vertex.Position.Y, vertex.Position.Z},
-                              {1, 0, 1},
+                              //{1, 0, 1},
                               {vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z}});
         max.x = std::max(max.x, vertex.Position.X);
         max.y = std::max(max.y, vertex.Position.Y);
@@ -60,7 +60,6 @@ bool loadMeshesFromOBJ(const std::string& path, SR::Application& app) {
 
         if (scaleFromFile > std::numeric_limits<float>().min())
             globalScale = scaleFromFile;
-        globalScale *= 1.0;
         for (auto& mesh : meshes) 
             mesh.setModelMatrix(glm::scale(glm::mat4{1.f}, glm::vec3(globalScale)));
 
@@ -77,7 +76,8 @@ struct ParsedArguments {
     uint32_t height = 320;
     bool exportToBMP = true;
     bool showHelp = false;
-    const char* pathToFile = "../Models/sphere/sphere.obj";  
+    const char* pathToFile =
+        "../Models/pyramid/pyramid.obj"; 
 };
 
 ParsedArguments parseCLI(const int argc, char** args) noexcept {

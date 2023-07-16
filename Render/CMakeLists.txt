@@ -8,7 +8,9 @@ set(RENDER_INCLUDES
 	includes/Application.hpp
 	includes/Camera.hpp
 	includes/Mesh.hpp
-	includes/OBJ_Loader.h  
+	includes/OBJ_Loader.h
+	includes/Render.hpp
+	includes/CommonDefines.hpp  
 )
 set(RENDER_SOURCES
 	sources/main.cpp
@@ -18,6 +20,7 @@ set(RENDER_SOURCES
 	sources/Camera.cpp
 	sources/Mesh.cpp
 	sources/exportToBMP.cpp
+	sources/Render.cpp
 )
 
 add_executable(${RENDER_PROJECT_NAME} ${RENDER_INCLUDES} ${RENDER_SOURCES})
