@@ -58,7 +58,7 @@ void Application::drawMeshes() {
 
     for (auto& mesh : m_meshes) { 
         glm::mat4 model = mesh.getModelMatrix();
-        glm::mat4 MVP = projection * view * model;
+        glm::mat4 MVP = glm::transpose(projection * view * model);
 
         m_render.setMVPmatrix(std::move(MVP));
         m_render.setVertexData(mesh.getVertexData());

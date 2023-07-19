@@ -84,7 +84,7 @@ void Camera::changeCameraPosition(glm::vec3 addPos) {
     setViewTarget(m_cameraPosition, glm::vec3{0.f});
 }
 
-const glm::mat4& Camera::getNDCtoScreenMatrix() const noexcept { return m_NDCtoScreen; }
+const glm::mat4& Camera::getNDCtoScreenMatrix() const noexcept { return glm::transpose(m_NDCtoScreen); }
 
 const glm::mat4& Camera::getProjection() const noexcept { return m_projection; }
 

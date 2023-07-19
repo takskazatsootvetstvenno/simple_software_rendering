@@ -4,7 +4,7 @@
 #include <fstream>
 
 static constexpr int NUM_OF_THREADS = 16;
-
+#include <iostream>
 namespace SR {
 
 // Check if 3 point is a triangle
@@ -136,7 +136,7 @@ void Render::processVertexShader() {
         // Start User-defined VS
         auto& inputPosition = vertices[vertex_index].position;
         auto& inputNormals = vertices[vertex_index].normal;
-        auto pos = m_MVP * glm::vec4(inputPosition, 1.f);
+        auto pos = glm::vec4(inputPosition, 1.f) * m_MVP;
         // End user-defined VS
 
         // Perspective devision
@@ -147,7 +147,7 @@ void Render::processVertexShader() {
         pos.w = 1.f;
 
         // To screen space
-        pos = m_NDCtoScreen * pos;
+        pos = pos * m_NDCtoScreen;
 
         m_VStoFSBuffer.emplace_back(glm::vec3(pos), inputNormals);
     }
