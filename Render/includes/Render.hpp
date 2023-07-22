@@ -24,6 +24,7 @@ class Render {
  private:
     void exportInputData();
     void exportVStoFSBuffer();
+    void exportScreenBuffer();
 
     void processVertexShader();
     void processFragmentShader();
@@ -36,6 +37,7 @@ class Render {
     const std::vector<VertexInput>* m_vertexInfo = nullptr;
     const std::vector<uint32_t>* m_indexInfo = nullptr;
     std::vector<VStoFSBuffer> m_VStoFSBuffer;
+    std::vector<uint32_t> m_resultScreenBuffer;
     glm::mat4 m_MVP{};
     glm::mat4 m_NDCtoScreen{};
 };

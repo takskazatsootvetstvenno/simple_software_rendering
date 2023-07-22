@@ -36,9 +36,17 @@ void Render::exportInputData() {
 }
 
 void Render::exportVStoFSBuffer() { 
-    std::ofstream VStoFSBufferFile("VStoFSBuffer.bin", std::ios::binary | std::ios::out); 
-    VStoFSBufferFile.write(
-        reinterpret_cast<const char*>(m_VStoFSBuffer.data()), m_VStoFSBuffer.size() * sizeof(VStoFSBuffer));
+    std::ofstream VStoFSBufferFile("VStoFSBuffer.bin", std::ios::binary); 
+    using buffer_type = decltype(m_VStoFSBuffer)::value_type;
+    VStoFSBufferFile.write(reinterpret_cast<const char*>(m_VStoFSBuffer.data()),
+                           m_VStoFSBuffer.size() * sizeof(buffer_type));
+}
+
+void Render::exportScreenBuffer() {
+    std::ofstream resultBufferFile("ResultScreenBuffer.bin", std::ios::binary);
+    using buffer_type = decltype(m_resultScreenBuffer)::value_type;
+    resultBufferFile.write(reinterpret_cast<const char*>(m_resultScreenBuffer.data()),
+                           m_resultScreenBuffer.size() * sizeof(buffer_type));
 }
 
 void Render::gpu_thread(const int num_thread) noexcept {
@@ -94,6 +102,11 @@ void Render::gpu_thread(const int num_thread) noexcept {
                     if (point_z < z_buffer) { //Depth test
                         z_buffer = point_z;
                         m_window.setPixel(j, i, m_window.getWindowColorFromVector(glm::vec4{result_color, 1.f}));
+                        if (m_exportAllBlobs) {
+                            std::fill(m_resultScreenBuffer.begin(), m_resultScreenBuffer.end(), 0);
+                            m_resultScreenBuffer[i * m_window.width() + j] = 
+                                m_window.getWindowColorFromVector(glm::vec4{result_color, 1.f});
+                        }
                     }
                 }
             }
@@ -103,6 +116,8 @@ void Render::gpu_thread(const int num_thread) noexcept {
 Render::Render(Window& window) : m_window(window) {
     static_assert(sizeof(VertexInput) == sizeof(float) * 6, "Invalid input buffer size");
     static_assert(sizeof(VStoFSBuffer) == sizeof(float) * 6, "Invalid intermediate buffer size");
+    auto [width, height] = m_window.getExtent();
+    m_resultScreenBuffer.resize(width * height);
 }
 
 void Render::setVertexData(const std::vector<VertexInput>& vertexInfo) noexcept { m_vertexInfo = &vertexInfo; }
@@ -123,6 +138,9 @@ void Render::draw() {
         exportVStoFSBuffer();
 
     processFragmentShader();
+
+    if (m_exportAllBlobs) 
+        exportScreenBuffer();
 }
 
 void Render::setExportBlobs(bool exportBlobs) noexcept { m_exportAllBlobs = exportBlobs; }
